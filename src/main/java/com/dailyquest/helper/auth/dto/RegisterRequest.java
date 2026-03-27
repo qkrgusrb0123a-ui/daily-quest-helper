@@ -10,8 +10,11 @@ public class RegisterRequest {
     private String username;
 
     @NotBlank(message = "비밀번호를 입력해주세요.")
-    @Size(min = 6, max = 100, message = "비밀번호는 6자 이상이어야 합니다.")
+    @Size(min = 8, max = 100, message = "비밀번호는 8자 이상이어야 합니다.")
     private String password;
+
+    @NotBlank(message = "비밀번호 확인을 입력해주세요.")
+    private String confirmPassword;
 
     public String getUsername() {
         return username;
@@ -21,11 +24,19 @@ public class RegisterRequest {
         return password;
     }
 
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
+
     public void setUsername(String username) {
         this.username = username;
     }
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
     }
 }

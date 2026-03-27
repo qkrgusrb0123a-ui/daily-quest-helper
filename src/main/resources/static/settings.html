@@ -332,16 +332,63 @@
     const gameApi = "/api/games";
     const questApi = "/api/quests";
     const authApi = "/api/auth";
+    const GUEST_STORAGE_KEY = "dailyQuestGuestData";
 
     let games = [];
     let isLoggedIn = false;
     const selectedQuestTypeByGame = {};
+
     let guestGames = [];
     let guestQuestsByGame = {};
     let guestGameIdSeq = 1;
     let guestQuestIdSeq = 1;
 
+    function loadGuestDataFromSession() {
+        try {
+            const raw = sessionStorage.getItem(GUEST_STORAGE_KEY);
+
+            if (!raw) {
+                guestGames = [];
+                guestQuestsByGame = {};
+                guestGameIdSeq = 1;
+                guestQuestIdSeq = 1;
+                return;
+            }
+
+            const parsed = JSON.parse(raw);
+
+            guestGames = Array.isArray(parsed.guestGames) ? parsed.guestGames : [];
+            guestQuestsByGame = parsed.guestQuestsByGame && typeof parsed.guestQuestsByGame === "object"
+                ? parsed.guestQuestsByGame
+                : {};
+            guestGameIdSeq = Number.isInteger(parsed.guestGameIdSeq) ? parsed.guestGameIdSeq : 1;
+            guestQuestIdSeq = Number.isInteger(parsed.guestQuestIdSeq) ? parsed.guestQuestIdSeq : 1;
+        } catch (error) {
+            console.error("게스트 데이터 불러오기 실패:", error);
+            guestGames = [];
+            guestQuestsByGame = {};
+            guestGameIdSeq = 1;
+            guestQuestIdSeq = 1;
+        }
+    }
+
+    function saveGuestDataToSession() {
+        try {
+            const data = {
+                guestGames,
+                guestQuestsByGame,
+                guestGameIdSeq,
+                guestQuestIdSeq
+            };
+
+            sessionStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(data));
+        } catch (error) {
+            console.error("게스트 데이터 저장 실패:", error);
+        }
+    }
+
     window.addEventListener("DOMContentLoaded", async () => {
+        loadGuestDataFromSession();
         await checkLoginStatus();
     });
 
@@ -358,13 +405,15 @@
             } else {
                 isLoggedIn = false;
                 document.getElementById("loginStatusBox").textContent =
-                    "게스트 모드입니다. 로그인 없이 사용할 수 있지만 새로고침하면 데이터가 사라집니다.";
+                    "게스트 모드입니다. 로그인 없이 사용할 수 있고, 같은 탭에서는 새로고침해도 유지됩니다. 브라우저 탭을 닫으면 데이터가 사라집니다.";
+                loadGuestDataFromSession();
                 renderGuestGames();
             }
         } catch (error) {
             isLoggedIn = false;
             document.getElementById("loginStatusBox").textContent =
-                "게스트 모드입니다. 로그인 없이 사용할 수 있지만 새로고침하면 데이터가 사라집니다.";
+                "게스트 모드입니다. 로그인 없이 사용할 수 있고, 같은 탭에서는 새로고침해도 유지됩니다. 브라우저 탭을 닫으면 데이터가 사라집니다.";
+            loadGuestDataFromSession();
             renderGuestGames();
         }
     }
@@ -536,6 +585,7 @@
                 weeklyResetTime: "00:00"
             });
             guestQuestsByGame[gameId] = [];
+            saveGuestDataToSession();
             input.value = "";
             renderGameList();
             return;
@@ -579,6 +629,7 @@
             if (game) {
                 game.dailyResetTime = dailyResetTime;
                 game.weeklyResetTime = weeklyResetTime;
+                saveGuestDataToSession();
             }
             messageEl.textContent = "설정되었습니다.";
             setTimeout(() => messageEl.textContent = "", 2000);
@@ -628,6 +679,7 @@
                 type,
                 completed: false
             });
+            saveGuestDataToSession();
             input.value = "";
             renderGameList();
             return;
@@ -662,6 +714,7 @@
 
         if (!isLoggedIn) {
             guestQuestsByGame[gameId] = (guestQuestsByGame[gameId] || []).filter(q => q.id !== questId);
+            saveGuestDataToSession();
             renderGameList();
             return;
         }
@@ -689,6 +742,7 @@
         if (!isLoggedIn) {
             guestGames = guestGames.filter(g => g.id !== gameId);
             delete guestQuestsByGame[gameId];
+            saveGuestDataToSession();
             renderGameList();
             return;
         }

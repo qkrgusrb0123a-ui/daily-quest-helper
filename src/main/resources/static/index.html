@@ -231,13 +231,59 @@
     const authApi = "/api/auth";
     const gameApi = "/api/games";
     const questApi = "/api/quests";
+    const GUEST_STORAGE_KEY = "dailyQuestGuestData";
 
     let isLoggedIn = false;
     let currentUsername = "";
+
     let guestGames = [];
     let guestQuestsByGame = {};
     let guestGameIdSeq = 1;
     let guestQuestIdSeq = 1;
+
+    function loadGuestDataFromSession() {
+        try {
+            const raw = sessionStorage.getItem(GUEST_STORAGE_KEY);
+
+            if (!raw) {
+                guestGames = [];
+                guestQuestsByGame = {};
+                guestGameIdSeq = 1;
+                guestQuestIdSeq = 1;
+                return;
+            }
+
+            const parsed = JSON.parse(raw);
+
+            guestGames = Array.isArray(parsed.guestGames) ? parsed.guestGames : [];
+            guestQuestsByGame = parsed.guestQuestsByGame && typeof parsed.guestQuestsByGame === "object"
+                ? parsed.guestQuestsByGame
+                : {};
+            guestGameIdSeq = Number.isInteger(parsed.guestGameIdSeq) ? parsed.guestGameIdSeq : 1;
+            guestQuestIdSeq = Number.isInteger(parsed.guestQuestIdSeq) ? parsed.guestQuestIdSeq : 1;
+        } catch (error) {
+            console.error("게스트 데이터 불러오기 실패:", error);
+            guestGames = [];
+            guestQuestsByGame = {};
+            guestGameIdSeq = 1;
+            guestQuestIdSeq = 1;
+        }
+    }
+
+    function saveGuestDataToSession() {
+        try {
+            const data = {
+                guestGames,
+                guestQuestsByGame,
+                guestGameIdSeq,
+                guestQuestIdSeq
+            };
+
+            sessionStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(data));
+        } catch (error) {
+            console.error("게스트 데이터 저장 실패:", error);
+        }
+    }
 
     async function checkLoginStatus() {
         try {
@@ -247,9 +293,9 @@
             if (response.ok && data.loggedIn) {
                 isLoggedIn = true;
                 currentUsername = data.username || "";
-                document.getElementById("authBtn").textContent = "로그아웃";
-                document.getElementById("statusBox").textContent =
-                    `${currentUsername}님으로 로그인 중입니다. 계정 데이터가 저장됩니다.`;
+                document.getElementById("authBtn").textContent = "계정 설정";
+                document.getElementById("statusBox").innerHTML =
+                    `👤 <b>${currentUsername}</b>님 | 계정 데이터 저장 중`;
                 await loadGames();
             } else {
                 setGuestMode();
@@ -264,18 +310,19 @@
         isLoggedIn = false;
         currentUsername = "";
         document.getElementById("authBtn").textContent = "로그인";
-        document.getElementById("statusBox").textContent =
-            "게스트 모드입니다. 로그인 없이 사용할 수 있지만 새로고침하면 데이터가 사라집니다.";
+        document.getElementById("statusBox").innerHTML =
+    `👤 <b>게스트</b> | 임시 데이터 (탭 종료 시 삭제)`;
+    
+        loadGuestDataFromSession();
         renderGuestGames();
     }
 
     function handleAuthButton() {
         if (!isLoggedIn) {
             window.location.href = "/login.html";
-            return;
+        } else {
+            window.location.href = "/account.html";
         }
-
-        logout();
     }
 
     async function logout() {
@@ -451,9 +498,12 @@
         if (!isLoggedIn) {
             const quests = guestQuestsByGame[gameId] || [];
             const target = quests.find(q => q.id === Number(questId));
+
             if (target) {
                 target.completed = !target.completed;
+                saveGuestDataToSession();
             }
+
             renderQuestLists(quests);
             loadProgressFromQuests(quests);
             return;
@@ -506,7 +556,10 @@
         window.location.href = "/settings.html";
     }
 
-    checkLoginStatus();
+    window.addEventListener("DOMContentLoaded", async () => {
+        loadGuestDataFromSession();
+        await checkLoginStatus();
+    });
 </script>
 </body>
 </html>

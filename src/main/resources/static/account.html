@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>계정 설정</title>
+
+<style>
+body {
+    margin:0;
+    font-family: Arial;
+    background:#f2f4f8;
+}
+
+.container {
+    width:900px;
+    margin:40px auto;
+    background:white;
+    border-radius:8px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.1);
+    overflow:hidden;
+}
+
+.header {
+    background:linear-gradient(to bottom,#3c66a6,#2d4f84);
+    color:white;
+    padding:20px;
+    text-align:center;
+    position:relative;
+    font-size:24px;
+    font-weight:bold;
+}
+
+.back-btn {
+    position:absolute;
+    left:20px;
+    top:18px;
+    cursor:pointer;
+}
+
+.content {
+    padding:30px;
+}
+
+.section {
+    border:1px solid #d5dbe4;
+    border-radius:6px;
+    margin-bottom:20px;
+    padding:20px;
+    background:#fff;
+}
+
+.section-title {
+    font-size:18px;
+    font-weight:bold;
+    margin-bottom:10px;
+    color:#23497c;
+}
+
+input {
+    width:100%;
+    padding:10px;
+    margin-top:8px;
+    border:1px solid #cfd6df;
+    border-radius:6px;
+}
+
+button {
+    margin-top:10px;
+    padding:10px 14px;
+    background:#3b73bd;
+    color:white;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.danger {
+    background:#e74c3c;
+}
+
+.logout {
+    background:#555;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<div class="header">
+    <span class="back-btn" onclick="goBack()">←</span>
+    계정 설정
+</div>
+
+<div class="content">
+
+<div class="section">
+    <div class="section-title">계정 이름 변경</div>
+    <input id="newUsername" placeholder="새 아이디 입력">
+    <button onclick="updateUsername()">변경</button>
+</div>
+
+<div class="section">
+    <div class="section-title">비밀번호 변경</div>
+
+    <input id="currentPassword" type="password" placeholder="현재 비밀번호">
+    <input id="newPassword" type="password" placeholder="새 비밀번호">
+    <input id="confirmPassword" type="password" placeholder="새 비밀번호 확인">
+
+    <button onclick="updatePassword()">변경</button>
+</div>
+
+<div class="section">
+    <div class="section-title">계정 관리</div>
+
+    <button class="logout" onclick="logout()">로그아웃</button>
+    <button class="danger" onclick="deleteAccount()">회원탈퇴</button>
+</div>
+
+</div>
+</div>
+
+<script>
+const authApi="/api/auth";
+
+function goBack(){
+    location.href="/index.html";
+}
+
+async function updateUsername(){
+    const newUsername=document.getElementById("newUsername").value;
+
+    const res=await fetch(authApi+"/username",{
+        method:"PUT",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({newUsername})
+    });
+
+    if(!res.ok){
+        alert("아이디 변경 실패");
+        return;
+    }
+
+    alert("아이디 변경 완료");
+}
+
+async function updatePassword(){
+    const currentPassword=document.getElementById("currentPassword").value;
+    const newPassword=document.getElementById("newPassword").value;
+    const confirmPassword=document.getElementById("confirmPassword").value;
+
+    const res=await fetch(authApi+"/password",{
+        method:"PUT",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+            currentPassword,
+            newPassword,
+            confirmPassword
+        })
+    });
+
+    if(!res.ok){
+        alert("비밀번호 변경 실패");
+        return;
+    }
+
+    alert("비밀번호 변경 완료");
+}
+
+async function logout(){
+    await fetch(authApi+"/logout",{method:"POST"});
+    location.href="/index.html";
+}
+
+async function deleteAccount(){
+    if(!confirm("정말 탈퇴하시겠습니까?")) return;
+
+    const res=await fetch(authApi+"/account",{method:"DELETE"});
+
+    if(!res.ok){
+        alert("탈퇴 실패");
+        return;
+    }
+
+    alert("탈퇴 완료");
+    location.href="/index.html";
+}
+</script>
+
+</body>
+</html>

@@ -2,6 +2,8 @@ package com.dailyquest.helper.auth;
 
 import com.dailyquest.helper.auth.dto.LoginRequest;
 import com.dailyquest.helper.auth.dto.RegisterRequest;
+import com.dailyquest.helper.auth.dto.UpdatePasswordRequest;
+import com.dailyquest.helper.auth.dto.UpdateUsernameRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -63,5 +65,59 @@ public class AuthController {
                 "userId", userId,
                 "username", username
         ));
+    }
+
+    @PutMapping("/username")
+    public ResponseEntity<?> updateUsername(@RequestBody UpdateUsernameRequest request, HttpSession session) {
+        Long userId = getLoginUserId(session);
+
+        authService.updateUsername(userId, request.getNewUsername());
+
+        Object updatedUsername = session.getAttribute("LOGIN_USERNAME");
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "아이디가 변경되었습니다.",
+                "username", updatedUsername
+        ));
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<?> updatePassword(@RequestBody UpdatePasswordRequest request, HttpSession session) {
+        Long userId = getLoginUserId(session);
+
+        authService.updatePassword(
+                userId,
+                request.getCurrentPassword(),
+                request.getNewPassword(),
+                request.getConfirmPassword()
+        );
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "비밀번호가 변경되었습니다."
+        ));
+    }
+
+    @DeleteMapping("/account")
+    public ResponseEntity<?> deleteAccount(HttpSession session) {
+        Long userId = getLoginUserId(session);
+
+        authService.deleteAccount(userId);
+        session.invalidate();
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "회원탈퇴가 완료되었습니다."
+        ));
+    }
+
+    private Long getLoginUserId(HttpSession session) {
+        Object userIdObj = session.getAttribute("LOGIN_USER_ID");
+
+        if (userIdObj == null) {
+            throw new IllegalStateException("로그인이 필요합니다.");
+        }
+
+        return Long.valueOf(userIdObj.toString());
     }
 }
