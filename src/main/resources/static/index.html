@@ -30,9 +30,9 @@
             text-align: center;
         }
 
-        .header button {
+        .header-left-btn,
+        .header-right-btn {
             position: absolute;
-            right: 20px;
             top: 16px;
             background: #3b73bd;
             border: 1px solid rgba(255,255,255,0.2);
@@ -43,8 +43,30 @@
             font-size: 16px;
         }
 
+        .header-left-btn {
+            left: 20px;
+        }
+
+        .header-right-btn {
+            right: 20px;
+        }
+
         .content {
             padding: 30px;
+        }
+
+        .status-box {
+            margin-bottom: 20px;
+            padding: 14px 16px;
+            border: 1px solid #d5dbe4;
+            border-radius: 6px;
+            background: #f8fafc;
+            color: #23497c;
+            font-size: 16px;
+        }
+
+        .hidden {
+            display: none;
         }
 
         .game-select-row {
@@ -155,139 +177,529 @@
             color: #777;
             font-size: 16px;
         }
+
+        .top-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .top-row input {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #cfd6df;
+            border-radius: 6px;
+        }
+
+        .top-row button {
+            padding: 12px 18px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            background: #3b73bd;
+            color: white;
+            cursor: pointer;
+        }
+
+        .game-card {
+            border: 1px solid #d5dbe4;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .game-title {
+            background: #f1f3f7;
+            padding: 16px 20px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #23497c;
+            border-bottom: 1px solid #d5dbe4;
+        }
+
+        .game-content {
+            padding: 20px;
+        }
+
+        .reset-box {
+            border: 1px solid #d5dbe4;
+            border-radius: 6px;
+            background: #f8fafc;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .reset-title {
+            font-size: 17px;
+            font-weight: bold;
+            color: #23497c;
+            margin-bottom: 12px;
+        }
+
+        .reset-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .reset-item {
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .reset-item label {
+            display: block;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #23497c;
+        }
+
+        .reset-item input[type="time"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 15px;
+            border: 1px solid #cfd6df;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .reset-help {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .reset-action-row {
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .reset-confirm-btn {
+            background: #3b73bd;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .reset-save-message {
+            font-size: 14px;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .quest-add-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .quest-add-row input {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #cfd6df;
+            border-radius: 6px;
+        }
+
+        .type-toggle {
+            display: flex;
+            border: 1px solid #cfd6df;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .type-toggle button {
+            padding: 10px 14px;
+            border: none;
+            background: #f4f6fa;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .type-toggle button.active {
+            background: #3b73bd;
+            color: white;
+        }
+
+        .quest-add-row .add-btn {
+            background: #3b73bd;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .quest-section-label {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #23497c;
+        }
+
+        .quest-item-setting {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 14px;
+            border: 1px solid #d5dbe4;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            background: #fff;
+        }
+
+        .quest-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .quest-text {
+            font-size: 16px;
+            word-break: break-word;
+        }
+
+        .quest-type-badge {
+            font-size: 13px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .daily-badge {
+            background: #57a63e;
+        }
+
+        .weekly-badge {
+            background: #5c94d6;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .game-delete-row {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .game-delete-row button {
+            background: #c0392b;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
+        <button id="authBtn" class="header-left-btn" onclick="handleAuthButton()">로그인</button>
         게임 일일 퀘스트 도우미
-        <button onclick="goToSettings()">설정</button>
+        <button id="screenBtn" class="header-right-btn" onclick="toggleScreen()">설정</button>
     </div>
 
     <div class="content">
-        <div class="game-select-row">
-            <label for="gameSelect">게임 선택:</label>
-            <select id="gameSelect" onchange="loadQuestsBySelectedGame()">
-                <option value="">게임을 선택하세요</option>
-            </select>
+        <div id="statusBox" class="status-box">상태를 확인하는 중입니다.</div>
+
+        <!-- 메인 화면 -->
+        <div id="mainScreen">
+            <div class="game-select-row">
+                <label for="gameSelect">게임 선택:</label>
+                <select id="gameSelect" onchange="renderMainScreen()">
+                    <option value="">게임을 선택하세요</option>
+                </select>
+            </div>
+
+            <div class="quest-section">
+                <div class="quest-section-title">일일 퀘스트</div>
+                <div class="quest-list" id="dailyQuestList">
+                    <div class="empty-message">표시할 일일 퀘스트가 없습니다.</div>
+                </div>
+            </div>
+
+            <div class="quest-section">
+                <div class="quest-section-title">주간 퀘스트</div>
+                <div class="quest-list" id="weeklyQuestList">
+                    <div class="empty-message">표시할 주간 퀘스트가 없습니다.</div>
+                </div>
+            </div>
+
+            <div class="progress-wrapper">
+                <div class="progress-label">일일 퀘스트 완료율</div>
+                <div class="progress-bar-bg">
+                    <div id="dailyProgressBar" class="progress-bar-fill daily-fill"></div>
+                </div>
+                <div class="progress-text">
+                    <span id="dailyProgressText">0%</span>
+                </div>
+
+                <div class="progress-label">주간 퀘스트 완료율</div>
+                <div class="progress-bar-bg">
+                    <div id="weeklyProgressBar" class="progress-bar-fill weekly-fill"></div>
+                </div>
+                <div class="progress-text">
+                    <span id="weeklyProgressText">0%</span>
+                </div>
+            </div>
         </div>
 
-        <div class="quest-section">
-            <div class="quest-section-title">일일 퀘스트</div>
-            <div class="quest-list" id="dailyQuestList">
-                <div class="empty-message">표시할 일일 퀘스트가 없습니다.</div>
-            </div>
-        </div>
-
-        <div class="quest-section">
-            <div class="quest-section-title">주간 퀘스트</div>
-            <div class="quest-list" id="weeklyQuestList">
-                <div class="empty-message">표시할 주간 퀘스트가 없습니다.</div>
-            </div>
-        </div>
-
-        <div class="progress-wrapper">
-            <div class="progress-label">일일 퀘스트 완료율</div>
-            <div class="progress-bar-bg">
-                <div id="dailyProgressBar" class="progress-bar-fill daily-fill"></div>
-            </div>
-            <div class="progress-text">
-                <span id="dailyProgressText">0%</span>
+        <!-- 설정 화면 -->
+        <div id="settingsScreen" class="hidden">
+            <div class="top-row">
+                <input type="text" id="newGameName" placeholder="추가할 게임 이름을 입력하세요">
+                <button type="button" onclick="addGame()">+ 게임 추가</button>
             </div>
 
-            <div class="progress-label">주간 퀘스트 완료율</div>
-            <div class="progress-bar-bg">
-                <div id="weeklyProgressBar" class="progress-bar-fill weekly-fill"></div>
-            </div>
-            <div class="progress-text">
-                <span id="weeklyProgressText">0%</span>
-            </div>
+            <div id="gameList"></div>
         </div>
     </div>
 </div>
 
 <script>
+    const authApi = "/api/auth";
     const gameApi = "/api/games";
     const questApi = "/api/quests";
 
-    async function loadGames() {
+    let appMode = "guest"; // guest | user
+    let currentUsername = "";
+    let currentScreen = "main";
+    let selectedGameId = "";
+    const selectedQuestTypeByGame = {};
+
+    const guestState = {
+        nextGameId: 1,
+        nextQuestId: 1,
+        games: []
+    };
+
+    let currentGames = [];
+
+    window.addEventListener("DOMContentLoaded", async () => {
+        await checkLoginStatus();
+        showScreen("main");
+    });
+
+    async function checkLoginStatus() {
         try {
-            const response = await fetch('/api/games');
-            const games = await response.json();
+            const response = await fetch(`${authApi}/me`);
+            const data = await response.json();
 
-            const gameSelect = document.getElementById('gameSelect');
-
-            gameSelect.innerHTML = '';
-
-            if (!games || games.length === 0) {
-                const defaultOption = document.createElement('option');
-                defaultOption.value = '';
-                defaultOption.textContent = '게임을 선택하세요';
-                defaultOption.disabled = true;
-                defaultOption.selected = true;
-                gameSelect.appendChild(defaultOption);
-                return;
+            if (response.ok && data.loggedIn) {
+                appMode = "user";
+                currentUsername = data.username || "";
+            } else {
+                appMode = "guest";
+                currentUsername = "";
             }
-
-            games.forEach((game, index) => {
-                const option = document.createElement('option');
-                option.value = game.id;
-                option.textContent = game.name;
-
-                if (index === 0) {
-                    option.selected = true;
-                }
-
-                gameSelect.appendChild(option);
-            });
-
-            loadQuests(gameSelect.value);
-
         } catch (error) {
-            console.error('게임 목록 로드 실패:', error);
+            appMode = "guest";
+            currentUsername = "";
+        }
+
+        updateAuthUI();
+        await refreshAllData();
+    }
+
+    function updateAuthUI() {
+        const authBtn = document.getElementById("authBtn");
+        const statusBox = document.getElementById("statusBox");
+
+        if (appMode === "user") {
+            authBtn.textContent = "로그아웃";
+            statusBox.textContent = `${currentUsername}님으로 로그인 중입니다. 데이터는 계정에 저장됩니다.`;
+        } else {
+            authBtn.textContent = "로그인";
+            statusBox.textContent = "현재 게스트 모드입니다. 기능은 사용할 수 있지만 새로고침하거나 창을 닫으면 데이터가 사라집니다.";
         }
     }
 
-    async function loadQuestsBySelectedGame() {
-        const gameId = document.getElementById("gameSelect").value;
+    function showScreen(screen) {
+        currentScreen = screen;
 
-        if (!gameId) {
-            clearQuestLists();
-            updateProgressBars(0, 0);
+        document.getElementById("mainScreen").classList.toggle("hidden", screen !== "main");
+        document.getElementById("settingsScreen").classList.toggle("hidden", screen !== "settings");
+        document.getElementById("screenBtn").textContent = screen === "main" ? "설정" : "메인";
+
+        if (screen === "main") {
+            renderMainScreen();
+        } else {
+            renderSettingsScreen();
+        }
+    }
+
+    function toggleScreen() {
+        showScreen(currentScreen === "main" ? "settings" : "main");
+    }
+
+    async function handleAuthButton() {
+        if (appMode === "guest") {
+            window.location.href = "/login.html";
             return;
         }
 
         try {
-            const response = await fetch(`${questApi}/game/${gameId}`);
+            const response = await fetch(`${authApi}/logout`, { method: "POST" });
+
             if (!response.ok) {
-                throw new Error("퀘스트 목록 조회 실패");
+                throw new Error("로그아웃 실패");
             }
 
-            const quests = await response.json();
-            renderQuestLists(quests);
-            loadProgressFromQuests(quests);
+            appMode = "guest";
+            currentUsername = "";
+            currentGames = [];
+            selectedGameId = "";
+            guestState.nextGameId = 1;
+            guestState.nextQuestId = 1;
+            guestState.games = [];
+
+            updateAuthUI();
+            await refreshAllData();
+            alert("로그아웃되었습니다.");
         } catch (error) {
-            console.error("퀘스트 목록 불러오기 실패:", error);
-            clearQuestLists();
-            updateProgressBars(0, 0);
+            console.error(error);
+            alert("로그아웃에 실패했습니다.");
         }
     }
 
-    function renderQuestLists(quests) {
+    async function refreshAllData() {
+        if (appMode === "user") {
+            await loadUserGames();
+        } else {
+            loadGuestGames();
+        }
+
+        syncSelectedGameId();
+        renderGameSelect();
+        renderMainScreen();
+        renderSettingsScreen();
+    }
+
+    function loadGuestGames() {
+        currentGames = guestState.games;
+    }
+
+    async function loadUserGames() {
+        try {
+            const response = await fetch(gameApi);
+
+            if (response.status === 401) {
+                appMode = "guest";
+                currentUsername = "";
+                updateAuthUI();
+                currentGames = guestState.games;
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error("게임 목록 조회 실패");
+            }
+
+            const games = await response.json();
+
+            for (const game of games) {
+                try {
+                    const questResponse = await fetch(`${questApi}/game/${game.id}`);
+
+                    if (!questResponse.ok) {
+                        throw new Error("퀘스트 조회 실패");
+                    }
+
+                    game.quests = await questResponse.json();
+                } catch (e) {
+                    console.error(e);
+                    game.quests = [];
+                }
+            }
+
+            currentGames = games;
+        } catch (error) {
+            console.error(error);
+            alert("서버 데이터를 불러오지 못했습니다.");
+            currentGames = [];
+        }
+    }
+
+    function syncSelectedGameId() {
+        const exists = currentGames.some(game => String(game.id) === String(selectedGameId));
+
+        if (!exists) {
+            selectedGameId = currentGames.length > 0 ? String(currentGames[0].id) : "";
+        }
+    }
+
+    function renderGameSelect() {
+        const gameSelect = document.getElementById("gameSelect");
+        gameSelect.innerHTML = "";
+
+        if (currentGames.length === 0) {
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "등록된 게임이 없습니다";
+            option.selected = true;
+            gameSelect.appendChild(option);
+            return;
+        }
+
+        currentGames.forEach(game => {
+            const option = document.createElement("option");
+            option.value = game.id;
+            option.textContent = game.name;
+            option.selected = String(game.id) === String(selectedGameId);
+            gameSelect.appendChild(option);
+        });
+    }
+
+    function getSelectedGame() {
+        const select = document.getElementById("gameSelect");
+        selectedGameId = select.value;
+        return currentGames.find(game => String(game.id) === String(selectedGameId)) || null;
+    }
+
+    function renderMainScreen() {
+        const game = getSelectedGame();
+
+        if (!game) {
+            clearMainQuestLists();
+            updateProgressBars(0, 0);
+            return;
+        }
+
+        const quests = game.quests || [];
+        const dailyQuests = quests.filter(q => q.type === "DAILY");
+        const weeklyQuests = quests.filter(q => q.type === "WEEKLY");
+
         const dailyQuestList = document.getElementById("dailyQuestList");
         const weeklyQuestList = document.getElementById("weeklyQuestList");
 
         dailyQuestList.innerHTML = "";
         weeklyQuestList.innerHTML = "";
 
-        const dailyQuests = quests.filter(q => q.type === "DAILY");
-        const weeklyQuests = quests.filter(q => q.type === "WEEKLY");
-
         if (dailyQuests.length === 0) {
             dailyQuestList.innerHTML = '<div class="empty-message">표시할 일일 퀘스트가 없습니다.</div>';
         } else {
             dailyQuests.forEach(quest => {
-                dailyQuestList.appendChild(createQuestItem(quest));
+                dailyQuestList.appendChild(createMainQuestItem(quest));
             });
         }
 
@@ -295,22 +707,25 @@
             weeklyQuestList.innerHTML = '<div class="empty-message">표시할 주간 퀘스트가 없습니다.</div>';
         } else {
             weeklyQuests.forEach(quest => {
-                weeklyQuestList.appendChild(createQuestItem(quest));
+                weeklyQuestList.appendChild(createMainQuestItem(quest));
             });
         }
+
+        updateProgressFromQuests(quests);
     }
 
-    function createQuestItem(quest) {
+    function createMainQuestItem(quest) {
         const item = document.createElement("div");
         item.className = "quest-item";
 
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
-        checkbox.checked = quest.completed;
+        checkbox.checked = !!quest.completed;
         checkbox.onchange = () => toggleQuest(quest.id);
 
         const text = document.createElement("span");
         text.textContent = quest.content;
+
         if (quest.completed) {
             text.classList.add("completed-text");
         }
@@ -321,23 +736,14 @@
         return item;
     }
 
-    async function toggleQuest(questId) {
-        try {
-            const response = await fetch(`${questApi}/${questId}/toggle`, {
-                method: "PUT"
-            });
-
-            if (!response.ok) {
-                throw new Error("퀘스트 체크 상태 변경 실패");
-            }
-
-            await loadQuestsBySelectedGame();
-        } catch (error) {
-            console.error("퀘스트 체크 상태 변경 실패:", error);
-        }
+    function clearMainQuestLists() {
+        document.getElementById("dailyQuestList").innerHTML =
+            '<div class="empty-message">표시할 일일 퀘스트가 없습니다.</div>';
+        document.getElementById("weeklyQuestList").innerHTML =
+            '<div class="empty-message">표시할 주간 퀘스트가 없습니다.</div>';
     }
 
-    function loadProgressFromQuests(quests) {
+    function updateProgressFromQuests(quests) {
         const dailyQuests = quests.filter(q => q.type === "DAILY");
         const weeklyQuests = quests.filter(q => q.type === "WEEKLY");
 
@@ -347,32 +753,374 @@
         const dailyProgress = dailyQuests.length === 0 ? 0 : Math.round((dailyCompleted * 100) / dailyQuests.length);
         const weeklyProgress = weeklyQuests.length === 0 ? 0 : Math.round((weeklyCompleted * 100) / weeklyQuests.length);
 
-        document.getElementById("dailyProgressBar").style.width = `${dailyProgress}%`;
-        document.getElementById("weeklyProgressBar").style.width = `${weeklyProgress}%`;
-
-        document.getElementById("dailyProgressText").textContent = `${dailyProgress}%`;
-        document.getElementById("weeklyProgressText").textContent = `${weeklyProgress}%`;
+        updateProgressBars(dailyProgress, weeklyProgress);
     }
 
     function updateProgressBars(daily, weekly) {
         document.getElementById("dailyProgressBar").style.width = `${daily}%`;
         document.getElementById("weeklyProgressBar").style.width = `${weekly}%`;
-
         document.getElementById("dailyProgressText").textContent = `${daily}%`;
         document.getElementById("weeklyProgressText").textContent = `${weekly}%`;
     }
 
-    function clearQuestLists() {
-        document.getElementById("dailyQuestList").innerHTML = '<div class="empty-message">표시할 일일 퀘스트가 없습니다.</div>';
-        document.getElementById("weeklyQuestList").innerHTML = '<div class="empty-message">표시할 주간 퀘스트가 없습니다.</div>';
+    function renderSettingsScreen() {
+        const gameList = document.getElementById("gameList");
+        gameList.innerHTML = "";
+
+        if (currentGames.length === 0) {
+            gameList.innerHTML = '<p class="empty-message">추가된 게임이 없습니다.</p>';
+            return;
+        }
+
+        currentGames.forEach(game => {
+            if (!selectedQuestTypeByGame[game.id]) {
+                selectedQuestTypeByGame[game.id] = "DAILY";
+            }
+
+            const dailyQuests = (game.quests || []).filter(q => q.type === "DAILY");
+            const weeklyQuests = (game.quests || []).filter(q => q.type === "WEEKLY");
+            const currentType = selectedQuestTypeByGame[game.id];
+
+            const card = document.createElement("div");
+            card.className = "game-card";
+
+            card.innerHTML = `
+                <div class="game-title">${escapeHtml(game.name)}</div>
+                <div class="game-content">
+                    <div class="reset-box">
+                        <div class="reset-title">퀘스트 초기화 시간 설정</div>
+                        <div class="reset-row">
+                            <div class="reset-item">
+                                <label for="dailyResetTime-${game.id}">일일 퀘스트 초기화 시간</label>
+                                <input type="time" id="dailyResetTime-${game.id}" value="${normalizeTime(game.dailyResetTime)}">
+                                <div class="reset-help">이 게임의 일일 퀘스트만 매일 초기화됩니다.</div>
+                            </div>
+                            <div class="reset-item">
+                                <label for="weeklyResetTime-${game.id}">주간 퀘스트 초기화 시간</label>
+                                <input type="time" id="weeklyResetTime-${game.id}" value="${normalizeTime(game.weeklyResetTime)}">
+                                <div class="reset-help">이 게임의 주간 퀘스트만 매주 월요일 초기화됩니다.</div>
+                            </div>
+                        </div>
+                        <div class="reset-action-row">
+                            <button type="button" class="reset-confirm-btn" onclick="saveGameResetTimes('${game.id}')">확인</button>
+                            <span id="resetSaveMessage-${game.id}" class="reset-save-message"></span>
+                        </div>
+                    </div>
+
+                    <div class="quest-add-row">
+                        <input type="text" id="questInput-${game.id}" placeholder="퀘스트 내용을 입력하세요">
+                        <div class="type-toggle">
+                            <button type="button" class="${currentType === 'DAILY' ? 'active' : ''}" onclick="setQuestType('${game.id}', 'DAILY')">일일</button>
+                            <button type="button" class="${currentType === 'WEEKLY' ? 'active' : ''}" onclick="setQuestType('${game.id}', 'WEEKLY')">주간</button>
+                        </div>
+                        <button type="button" class="add-btn" onclick="addQuest('${game.id}')">+ 퀘스트 추가</button>
+                    </div>
+
+                    <div class="quest-section-label">일일 퀘스트</div>
+                    <div>
+                        ${dailyQuests.length === 0
+                            ? '<div class="empty-message">등록된 일일 퀘스트가 없습니다.</div>'
+                            : dailyQuests.map(q => `
+                                <div class="quest-item-setting">
+                                    <div class="quest-left">
+                                        <span class="quest-type-badge daily-badge">일일</span>
+                                        <span class="quest-text">${escapeHtml(q.content)}</span>
+                                    </div>
+                                    <button type="button" class="delete-btn" onclick="deleteQuest('${q.id}')">삭제</button>
+                                </div>
+                            `).join("")
+                        }
+                    </div>
+
+                    <div class="quest-section-label">주간 퀘스트</div>
+                    <div>
+                        ${weeklyQuests.length === 0
+                            ? '<div class="empty-message">등록된 주간 퀘스트가 없습니다.</div>'
+                            : weeklyQuests.map(q => `
+                                <div class="quest-item-setting">
+                                    <div class="quest-left">
+                                        <span class="quest-type-badge weekly-badge">주간</span>
+                                        <span class="quest-text">${escapeHtml(q.content)}</span>
+                                    </div>
+                                    <button type="button" class="delete-btn" onclick="deleteQuest('${q.id}')">삭제</button>
+                                </div>
+                            `).join("")
+                        }
+                    </div>
+
+                    <div class="game-delete-row">
+                        <button type="button" onclick="deleteGame('${game.id}')">게임 삭제</button>
+                    </div>
+                </div>
+            `;
+
+            gameList.appendChild(card);
+        });
     }
 
-    function goToSettings() {
-        window.location.href = "/settings.html";
+    function normalizeTime(value) {
+        return value && /^\d{2}:\d{2}$/.test(value) ? value : "00:00";
     }
 
-    loadGames();
-    setInterval(loadQuestsBySelectedGame, 30000);
+    function setQuestType(gameId, type) {
+        selectedQuestTypeByGame[gameId] = type;
+        renderSettingsScreen();
+    }
+
+    async function addGame() {
+        const input = document.getElementById("newGameName");
+        const gameName = input.value.trim();
+
+        if (!gameName) {
+            alert("게임 이름을 입력해주세요.");
+            return;
+        }
+
+        const exists = currentGames.some(game => game.name.toLowerCase() === gameName.toLowerCase());
+        if (exists) {
+            alert("이미 추가된 게임입니다.");
+            return;
+        }
+
+        if (appMode === "user") {
+            try {
+                const response = await fetch(gameApi, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        name: gameName,
+                        dailyResetTime: "00:00",
+                        weeklyResetTime: "00:00"
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error("게임 추가 실패");
+                }
+
+                input.value = "";
+                await refreshAllData();
+            } catch (error) {
+                console.error(error);
+                alert("게임 추가에 실패했습니다.");
+            }
+            return;
+        }
+
+        const newGame = {
+            id: `guest-game-${guestState.nextGameId++}`,
+            name: gameName,
+            dailyResetTime: "00:00",
+            weeklyResetTime: "00:00",
+            lastDailyResetDate: "",
+            lastWeeklyResetDate: "",
+            quests: []
+        };
+
+        guestState.games.push(newGame);
+        input.value = "";
+        await refreshAllData();
+    }
+
+    async function saveGameResetTimes(gameId) {
+        const dailyResetTime = document.getElementById(`dailyResetTime-${cssEscapeId(gameId)}`)?.value
+            || document.getElementById(`dailyResetTime-${gameId}`).value;
+        const weeklyResetTime = document.getElementById(`weeklyResetTime-${cssEscapeId(gameId)}`)?.value
+            || document.getElementById(`weeklyResetTime-${gameId}`).value;
+        const messageEl = document.getElementById(`resetSaveMessage-${gameId}`);
+
+        if (!dailyResetTime || !weeklyResetTime) {
+            alert("일일/주간 초기화 시간을 모두 입력해주세요.");
+            return;
+        }
+
+        if (appMode === "user") {
+            try {
+                const response = await fetch(`${gameApi}/${gameId}/reset-times`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        dailyResetTime,
+                        weeklyResetTime
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error("초기화 시간 저장 실패");
+                }
+
+                await refreshAllData();
+                if (messageEl) {
+                    messageEl.textContent = "설정되었습니다.";
+                    setTimeout(() => messageEl.textContent = "", 2000);
+                }
+            } catch (error) {
+                console.error(error);
+                alert("초기화 시간 저장에 실패했습니다.");
+            }
+            return;
+        }
+
+        const game = guestState.games.find(g => String(g.id) === String(gameId));
+        if (!game) return;
+
+        game.dailyResetTime = dailyResetTime;
+        game.weeklyResetTime = weeklyResetTime;
+
+        await refreshAllData();
+        const refreshedMessageEl = document.getElementById(`resetSaveMessage-${gameId}`);
+        if (refreshedMessageEl) {
+            refreshedMessageEl.textContent = "설정되었습니다.";
+            setTimeout(() => refreshedMessageEl.textContent = "", 2000);
+        }
+    }
+
+    async function addQuest(gameId) {
+        const input = document.getElementById(`questInput-${gameId}`);
+        const content = input.value.trim();
+        const type = selectedQuestTypeByGame[gameId] || "DAILY";
+
+        if (!content) {
+            alert("퀘스트 내용을 입력해주세요.");
+            return;
+        }
+
+        if (appMode === "user") {
+            try {
+                const response = await fetch(questApi, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        gameId,
+                        content,
+                        type
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error("퀘스트 추가 실패");
+                }
+
+                input.value = "";
+                await refreshAllData();
+            } catch (error) {
+                console.error(error);
+                alert("퀘스트 추가에 실패했습니다.");
+            }
+            return;
+        }
+
+        const game = guestState.games.find(g => String(g.id) === String(gameId));
+        if (!game) return;
+
+        game.quests.push({
+            id: `guest-quest-${guestState.nextQuestId++}`,
+            content,
+            type,
+            completed: false
+        });
+
+        input.value = "";
+        await refreshAllData();
+    }
+
+    async function deleteQuest(questId) {
+        const ok = confirm("이 퀘스트를 삭제할까요?");
+        if (!ok) return;
+
+        if (appMode === "user") {
+            try {
+                const response = await fetch(`${questApi}/${questId}`, {
+                    method: "DELETE"
+                });
+
+                if (!response.ok) {
+                    throw new Error("퀘스트 삭제 실패");
+                }
+
+                await refreshAllData();
+            } catch (error) {
+                console.error(error);
+                alert("퀘스트 삭제에 실패했습니다.");
+            }
+            return;
+        }
+
+        guestState.games.forEach(game => {
+            game.quests = game.quests.filter(q => String(q.id) !== String(questId));
+        });
+
+        await refreshAllData();
+    }
+
+    async function deleteGame(gameId) {
+        const ok = confirm("이 게임과 해당 퀘스트를 삭제할까요?");
+        if (!ok) return;
+
+        if (appMode === "user") {
+            try {
+                const response = await fetch(`${gameApi}/${gameId}`, {
+                    method: "DELETE"
+                });
+
+                if (!response.ok) {
+                    throw new Error("게임 삭제 실패");
+                }
+
+                await refreshAllData();
+            } catch (error) {
+                console.error(error);
+                alert("게임 삭제에 실패했습니다.");
+            }
+            return;
+        }
+
+        guestState.games = guestState.games.filter(game => String(game.id) !== String(gameId));
+        await refreshAllData();
+    }
+
+    async function toggleQuest(questId) {
+        if (appMode === "user") {
+            try {
+                const response = await fetch(`${questApi}/${questId}/toggle`, {
+                    method: "PUT"
+                });
+
+                if (!response.ok) {
+                    throw new Error("퀘스트 체크 상태 변경 실패");
+                }
+
+                await refreshAllData();
+            } catch (error) {
+                console.error(error);
+                alert("퀘스트 체크 상태 변경에 실패했습니다.");
+            }
+            return;
+        }
+
+        for (const game of guestState.games) {
+            const quest = game.quests.find(q => String(q.id) === String(questId));
+            if (quest) {
+                quest.completed = !quest.completed;
+                break;
+            }
+        }
+
+        await refreshAllData();
+    }
+
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function cssEscapeId(value) {
+        return String(value).replace(/[^a-zA-Z0-9\-_]/g, "_");
+    }
 </script>
 </body>
 </html>

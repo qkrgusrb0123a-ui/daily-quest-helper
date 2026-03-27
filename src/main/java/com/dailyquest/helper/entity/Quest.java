@@ -1,5 +1,6 @@
 package com.dailyquest.helper.entity;
 
+import com.dailyquest.helper.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
@@ -18,9 +19,14 @@ public class Quest {
     private QuestType type;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "game_id")
+    @JoinColumn(name = "game_id", nullable = false)
     @JsonIgnore
     private Game game;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
+    private User user;
 
     public Quest() {
     }
@@ -52,6 +58,14 @@ public class Quest {
         return game;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public void setContent(String content) {
         this.content = content;
     }
@@ -66,5 +80,9 @@ public class Quest {
 
     public void setGame(Game game) {
         this.game = game;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

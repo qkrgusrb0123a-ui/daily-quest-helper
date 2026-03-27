@@ -1,7 +1,9 @@
 package com.dailyquest.helper.entity;
 
+import com.dailyquest.helper.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +21,11 @@ public class Game {
 
     private String lastDailyResetDate = "";
     private String lastWeeklyResetDate = "";
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
+    private User user;
 
     @JsonIgnore
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -59,8 +66,16 @@ public class Game {
         return lastWeeklyResetDate;
     }
 
+    public User getUser() {
+        return user;
+    }
+
     public List<Quest> getQuests() {
         return quests;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public void setName(String name) {
@@ -81,5 +96,13 @@ public class Game {
 
     public void setLastWeeklyResetDate(String lastWeeklyResetDate) {
         this.lastWeeklyResetDate = lastWeeklyResetDate;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void setQuests(List<Quest> quests) {
+        this.quests = quests;
     }
 }

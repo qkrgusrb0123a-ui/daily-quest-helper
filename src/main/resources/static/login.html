@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 / 회원가입</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6fb;
+        }
+
+        .container {
+            max-width: 420px;
+            margin: 60px auto;
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .tabs button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: #dfe6ff;
+            cursor: pointer;
+        }
+
+        .tabs button.active {
+            background: #4c6fff;
+            color: white;
+        }
+
+        .form-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        input {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .action-btn {
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            cursor: pointer;
+            background: #4c6fff;
+            color: white;
+            font-size: 15px;
+        }
+
+        .back-btn {
+            margin-top: 12px;
+            background: #6c757d;
+        }
+
+        .message {
+            min-height: 20px;
+            font-size: 14px;
+            color: #d9534f;
+        }
+
+        .success {
+            color: #198754;
+        }
+
+        .guide {
+            margin-top: 12px;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>로그인 / 회원가입</h1>
+
+    <div class="tabs">
+        <button id="tabLogin" class="active">로그인</button>
+        <button id="tabRegister">회원가입</button>
+    </div>
+
+    <div class="form-area">
+        <input type="text" id="username" placeholder="아이디 입력">
+        <input type="password" id="password" placeholder="비밀번호 입력">
+        <button id="submitBtn" class="action-btn">로그인</button>
+        <div id="message" class="message"></div>
+        <button id="backBtn" class="action-btn back-btn">메인으로 돌아가기</button>
+        <div class="guide">
+            로그인하면 계정별로 게임/퀘스트가 저장됩니다.<br>
+            로그인하지 않아도 사용할 수 있지만, 게스트 데이터는 새로고침하면 사라집니다.
+        </div>
+    </div>
+</div>
+
+<script>
+    const authApi = "/api/auth";
+
+    const tabLogin = document.getElementById("tabLogin");
+    const tabRegister = document.getElementById("tabRegister");
+    const submitBtn = document.getElementById("submitBtn");
+    const backBtn = document.getElementById("backBtn");
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+    const message = document.getElementById("message");
+
+    let mode = "login";
+
+    function setMode(newMode) {
+        mode = newMode;
+
+        if (mode === "login") {
+            tabLogin.classList.add("active");
+            tabRegister.classList.remove("active");
+            submitBtn.textContent = "로그인";
+        } else {
+            tabRegister.classList.add("active");
+            tabLogin.classList.remove("active");
+            submitBtn.textContent = "회원가입";
+        }
+
+        message.textContent = "";
+        message.classList.remove("success");
+    }
+
+    tabLogin.addEventListener("click", () => setMode("login"));
+    tabRegister.addEventListener("click", () => setMode("register"));
+
+    submitBtn.addEventListener("click", async () => {
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        if (!username || !password) {
+            message.textContent = "아이디와 비밀번호를 입력해주세요.";
+            message.classList.remove("success");
+            return;
+        }
+
+        try {
+            const url = mode === "login" ? `${authApi}/login` : `${authApi}/register`;
+
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                message.textContent = data.message || "처리에 실패했습니다.";
+                message.classList.remove("success");
+                return;
+            }
+
+            if (mode === "register") {
+                message.textContent = "회원가입이 완료되었습니다. 이제 로그인해주세요.";
+                message.classList.add("success");
+                setMode("login");
+                passwordInput.value = "";
+            } else {
+                message.textContent = "로그인 성공";
+                message.classList.add("success");
+                setTimeout(() => {
+                    window.location.href = "/index.html";
+                }, 400);
+            }
+        } catch (error) {
+            message.textContent = "서버 통신에 실패했습니다.";
+            message.classList.remove("success");
+        }
+    });
+
+    backBtn.addEventListener("click", () => {
+        window.location.href = "/index.html";
+    });
+</script>
+</body>
+</html>
