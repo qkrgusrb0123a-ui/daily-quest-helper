@@ -6,9 +6,6 @@ public class GameRequest {
     private String dailyResetTime;
     private String weeklyResetTime;
 
-    public GameRequest() {
-    }
-
     public String getName() {
         return name;
     }
