@@ -37,6 +37,9 @@ public class QuestController {
             return questService.getQuestsByGame(gameId, user);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "퀘스트 조회 중 오류가 발생했습니다.");
         }
     }
 
@@ -57,6 +60,9 @@ public class QuestController {
             );
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "퀘스트 추가 중 오류가 발생했습니다.");
         }
     }
 
@@ -72,6 +78,9 @@ public class QuestController {
             return questService.toggleQuest(id, user);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "퀘스트 상태 변경 중 오류가 발생했습니다.");
         }
     }
 
@@ -87,6 +96,9 @@ public class QuestController {
             questService.deleteQuest(id, user);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "퀘스트 삭제 중 오류가 발생했습니다.");
         }
     }
 
@@ -98,6 +110,13 @@ public class QuestController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
 
-        return questService.calculateProgress(user);
+        try {
+            return questService.calculateProgress(user);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "진행도 조회 중 오류가 발생했습니다.");
+        }
     }
 }

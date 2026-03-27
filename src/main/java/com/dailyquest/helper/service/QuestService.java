@@ -29,7 +29,7 @@ public class QuestService {
         }
 
         if (isBlank(name)) {
-            throw new IllegalArgumentException("게임 이름을 입력해야 합니다.");
+            throw new IllegalArgumentException("게임 이름을 입력해주세요.");
         }
 
         Game game = new Game(name.trim());
@@ -94,11 +94,11 @@ public class QuestService {
         }
 
         if (gameId == null) {
-            throw new IllegalArgumentException("게임 ID가 필요합니다.");
+            throw new IllegalArgumentException("게임 정보를 찾을 수 없습니다.");
         }
 
         if (isBlank(content)) {
-            throw new IllegalArgumentException("퀘스트 내용을 입력해야 합니다.");
+            throw new IllegalArgumentException("퀘스트 내용을 입력해주세요.");
         }
 
         if (isBlank(type)) {
@@ -112,14 +112,10 @@ public class QuestService {
         try {
             questType = QuestType.valueOf(type.trim().toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("퀘스트 타입이 올바르지 않습니다. (DAILY 또는 WEEKLY)");
+            throw new IllegalArgumentException("퀘스트 타입이 올바르지 않습니다.");
         }
 
-        Quest quest = new Quest();
-        quest.setContent(content.trim());
-        quest.setCompleted(false);
-        quest.setType(questType);
-        quest.setGame(game);
+        Quest quest = new Quest(content.trim(), false, questType, game);
         quest.setUser(user);
 
         return questRepository.save(quest);
