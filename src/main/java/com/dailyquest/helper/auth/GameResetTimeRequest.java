@@ -1,4 +1,4 @@
-package com.dailyquest.helper.dto.auth;
+package com.dailyquest.helper.auth;
 
 public class GameResetTimeRequest {
 

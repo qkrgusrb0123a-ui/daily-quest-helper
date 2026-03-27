@@ -1,7 +1,7 @@
 package com.dailyquest.helper.controller;
 
-import com.dailyquest.helper.dto.GameRequest;
-import com.dailyquest.helper.dto.GameResetTimeRequest;
+import com.dailyquest.helper.auth.GameRequest;
+import com.dailyquest.helper.auth.GameResetTimeRequest;
 import com.dailyquest.helper.entity.Game;
 import com.dailyquest.helper.service.QuestService;
 import org.springframework.web.bind.annotation.*;

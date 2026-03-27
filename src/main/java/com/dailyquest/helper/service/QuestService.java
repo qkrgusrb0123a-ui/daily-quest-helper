@@ -1,6 +1,6 @@
 package com.dailyquest.helper.service;
 
-import com.dailyquest.helper.dto.ProgressResponse;
+import com.dailyquest.helper.auth.ProgressResponse;
 import com.dailyquest.helper.entity.Game;
 import com.dailyquest.helper.entity.Quest;
 import com.dailyquest.helper.entity.QuestType;

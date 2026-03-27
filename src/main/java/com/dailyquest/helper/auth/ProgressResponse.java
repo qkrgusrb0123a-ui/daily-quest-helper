@@ -1,4 +1,4 @@
-package com.dailyquest.helper.dto.auth;
+package com.dailyquest.helper.auth;
 
 public class ProgressResponse {
     private double dailyProgress;

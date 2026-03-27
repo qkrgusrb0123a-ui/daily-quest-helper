@@ -1,7 +1,7 @@
 package com.dailyquest.helper.controller;
 
-import com.dailyquest.helper.dto.ProgressResponse;
-import com.dailyquest.helper.dto.QuestRequest;
+import com.dailyquest.helper.auth.ProgressResponse;
+import com.dailyquest.helper.auth.QuestRequest;
 import com.dailyquest.helper.entity.Quest;
 import com.dailyquest.helper.service.QuestService;
 import org.springframework.web.bind.annotation.*;
