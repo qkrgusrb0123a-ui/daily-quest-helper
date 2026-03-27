@@ -8,134 +8,202 @@
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background: #f4f6fb;
+            background: #f2f4f8;
         }
 
         .container {
-            max-width: 420px;
-            margin: 60px auto;
+            width: 900px;
+            margin: 40px auto;
             background: white;
-            border-radius: 16px;
-            padding: 28px;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
 
-        h1 {
+        .header {
+            background: linear-gradient(to bottom, #3c66a6, #2d4f84);
+            color: white;
+            padding: 20px 30px;
             text-align: center;
-            margin-bottom: 24px;
-        }
-
-        .tabs {
-            display: flex;
-            margin-bottom: 20px;
-            gap: 10px;
-        }
-
-        .tabs button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            background: #dfe6ff;
-            cursor: pointer;
-        }
-
-        .tabs button.active {
-            background: #4c6fff;
-            color: white;
-        }
-
-        .form-area {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        input {
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            font-size: 14px;
-        }
-
-        .action-btn {
-            border: none;
-            border-radius: 10px;
-            padding: 12px;
-            cursor: pointer;
-            background: #4c6fff;
-            color: white;
-            font-size: 15px;
+            position: relative;
+            font-size: 24px;
+            font-weight: bold;
         }
 
         .back-btn {
-            margin-top: 12px;
-            background: #6c757d;
+            position: absolute;
+            left: 20px;
+            top: 18px;
+            background: transparent;
+            color: white;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .content {
+            padding: 40px 30px;
+            max-width: 420px;
+            margin: 0 auto;
+        }
+
+        .tab-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background: #dfe7f3;
+            color: #23497c;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            background: #3b73bd;
+            color: white;
+        }
+
+        .form-card {
+            border: 1px solid #d5dbe4;
+            border-radius: 8px;
+            background: #f8fafc;
+            padding: 24px;
+        }
+
+        .form-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #23497c;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 14px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #23497c;
+        }
+
+        .input-group input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            font-size: 15px;
+            border: 1px solid #cfd6df;
+            border-radius: 6px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            border: none;
+            border-radius: 6px;
+            padding: 13px;
+            cursor: pointer;
+            background: #3b73bd;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 8px;
         }
 
         .message {
-            min-height: 20px;
+            min-height: 22px;
+            margin-top: 14px;
+            text-align: center;
             font-size: 14px;
             color: #d9534f;
+            font-weight: bold;
         }
 
-        .success {
-            color: #198754;
+        .message.success {
+            color: #2e7d32;
         }
 
-        .guide {
-            margin-top: 12px;
-            font-size: 13px;
-            color: #666;
-            line-height: 1.5;
+        .guide-box {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 6px;
+            background: white;
+            border: 1px solid #d5dbe4;
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>로그인 / 회원가입</h1>
-
-    <div class="tabs">
-        <button id="tabLogin" class="active">로그인</button>
-        <button id="tabRegister">회원가입</button>
+    <div class="header">
+        <button class="back-btn" onclick="goBack()">← 돌아가기</button>
+        로그인 / 회원가입
     </div>
 
-    <div class="form-area">
-        <input type="text" id="username" placeholder="아이디 입력">
-        <input type="password" id="password" placeholder="비밀번호 입력">
-        <button id="submitBtn" class="action-btn">로그인</button>
-        <div id="message" class="message"></div>
-        <button id="backBtn" class="action-btn back-btn">메인으로 돌아가기</button>
-        <div class="guide">
-            로그인하면 계정별로 게임/퀘스트가 저장됩니다.<br>
-            로그인하지 않아도 사용할 수 있지만, 게스트 데이터는 새로고침하면 사라집니다.
+    <div class="content">
+        <div class="tab-row">
+            <button id="loginTabBtn" class="tab-btn active" onclick="setMode('login')">로그인</button>
+            <button id="registerTabBtn" class="tab-btn" onclick="setMode('register')">회원가입</button>
+        </div>
+
+        <div class="form-card">
+            <div id="formTitle" class="form-title">로그인</div>
+
+            <div class="input-group">
+                <label for="username">아이디</label>
+                <input type="text" id="username" placeholder="아이디를 입력하세요">
+            </div>
+
+            <div class="input-group">
+                <label for="password">비밀번호</label>
+                <input type="password" id="password" placeholder="비밀번호를 입력하세요">
+            </div>
+
+            <button id="submitBtn" class="submit-btn" onclick="submitAuth()">로그인</button>
+
+            <div id="message" class="message"></div>
+
+            <div class="guide-box">
+                로그인하면 사용자별로 게임과 퀘스트가 저장됩니다.<br>
+                회원가입 시 비밀번호는 서버에서 암호화되어 저장됩니다.
+            </div>
         </div>
     </div>
 </div>
 
 <script>
     const authApi = "/api/auth";
+    let currentMode = "login";
 
-    const tabLogin = document.getElementById("tabLogin");
-    const tabRegister = document.getElementById("tabRegister");
-    const submitBtn = document.getElementById("submitBtn");
-    const backBtn = document.getElementById("backBtn");
-    const usernameInput = document.getElementById("username");
-    const passwordInput = document.getElementById("password");
-    const message = document.getElementById("message");
+    function setMode(mode) {
+        currentMode = mode;
 
-    let mode = "login";
-
-    function setMode(newMode) {
-        mode = newMode;
+        const loginTabBtn = document.getElementById("loginTabBtn");
+        const registerTabBtn = document.getElementById("registerTabBtn");
+        const formTitle = document.getElementById("formTitle");
+        const submitBtn = document.getElementById("submitBtn");
+        const message = document.getElementById("message");
 
         if (mode === "login") {
-            tabLogin.classList.add("active");
-            tabRegister.classList.remove("active");
+            loginTabBtn.classList.add("active");
+            registerTabBtn.classList.remove("active");
+            formTitle.textContent = "로그인";
             submitBtn.textContent = "로그인";
         } else {
-            tabRegister.classList.add("active");
-            tabLogin.classList.remove("active");
+            registerTabBtn.classList.add("active");
+            loginTabBtn.classList.remove("active");
+            formTitle.textContent = "회원가입";
             submitBtn.textContent = "회원가입";
         }
 
@@ -143,12 +211,10 @@
         message.classList.remove("success");
     }
 
-    tabLogin.addEventListener("click", () => setMode("login"));
-    tabRegister.addEventListener("click", () => setMode("register"));
-
-    submitBtn.addEventListener("click", async () => {
-        const username = usernameInput.value.trim();
-        const password = passwordInput.value.trim();
+    async function submitAuth() {
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const message = document.getElementById("message");
 
         if (!username || !password) {
             message.textContent = "아이디와 비밀번호를 입력해주세요.";
@@ -157,11 +223,15 @@
         }
 
         try {
-            const url = mode === "login" ? `${authApi}/login` : `${authApi}/register`;
+            const url = currentMode === "login"
+                ? `${authApi}/login`
+                : `${authApi}/register`;
 
             const response = await fetch(url, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json"
+                },
                 body: JSON.stringify({ username, password })
             });
 
@@ -173,27 +243,28 @@
                 return;
             }
 
-            if (mode === "register") {
-                message.textContent = "회원가입이 완료되었습니다. 이제 로그인해주세요.";
+            if (currentMode === "register") {
+                message.textContent = "회원가입이 완료되었습니다. 로그인 해주세요.";
                 message.classList.add("success");
                 setMode("login");
-                passwordInput.value = "";
+                document.getElementById("password").value = "";
             } else {
                 message.textContent = "로그인 성공";
                 message.classList.add("success");
                 setTimeout(() => {
                     window.location.href = "/index.html";
-                }, 400);
+                }, 500);
             }
         } catch (error) {
+            console.error("인증 처리 실패:", error);
             message.textContent = "서버 통신에 실패했습니다.";
             message.classList.remove("success");
         }
-    });
+    }
 
-    backBtn.addEventListener("click", () => {
+    function goBack() {
         window.location.href = "/index.html";
-    });
+    }
 </script>
 </body>
 </html>
