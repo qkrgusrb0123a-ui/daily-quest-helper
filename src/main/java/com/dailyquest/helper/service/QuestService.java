@@ -24,26 +24,47 @@ public class QuestService {
     }
 
     public Game addGame(String name, String dailyResetTime, String weeklyResetTime, User user) {
-        Game game = new Game(name);
+        if (user == null) {
+            throw new IllegalArgumentException("로그인이 필요합니다.");
+        }
+
+        if (isBlank(name)) {
+            throw new IllegalArgumentException("게임 이름을 입력해야 합니다.");
+        }
+
+        Game game = new Game(name.trim());
         game.setUser(user);
         game.setDailyResetTime(isBlank(dailyResetTime) ? "00:00" : validateTime(dailyResetTime));
         game.setWeeklyResetTime(isBlank(weeklyResetTime) ? "00:00" : validateTime(weeklyResetTime));
         game.setLastDailyResetDate("");
         game.setLastWeeklyResetDate("");
+
         return gameRepository.save(game);
     }
 
     public List<Game> getAllGames(User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("로그인이 필요합니다.");
+        }
+
         return gameRepository.findByUser(user);
     }
 
     public void deleteGame(Long gameId, User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("로그인이 필요합니다.");
+        }
+
         Game game = gameRepository.findByIdAndUser(gameId, user)
                 .orElseThrow(() -> new IllegalArgumentException("게임 정보를 찾을 수 없습니다."));
         gameRepository.delete(game);
     }
 
     public Game updateGameResetTimes(Long gameId, String dailyResetTime, String weeklyResetTime, User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("로그인이 필요합니다.");
+        }
+
         Game game = gameRepository.findByIdAndUser(gameId, user)
                 .orElseThrow(() -> new IllegalArgumentException("게임 정보를 찾을 수 없습니다."));
 
@@ -68,16 +89,47 @@ public class QuestService {
     }
 
     public Quest addQuest(Long gameId, String content, String type, User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("로그인이 필요합니다.");
+        }
+
+        if (gameId == null) {
+            throw new IllegalArgumentException("게임 ID가 필요합니다.");
+        }
+
+        if (isBlank(content)) {
+            throw new IllegalArgumentException("퀘스트 내용을 입력해야 합니다.");
+        }
+
+        if (isBlank(type)) {
+            throw new IllegalArgumentException("퀘스트 타입이 필요합니다.");
+        }
+
         Game game = gameRepository.findByIdAndUser(gameId, user)
                 .orElseThrow(() -> new IllegalArgumentException("게임 정보를 찾을 수 없습니다."));
 
-        Quest quest = new Quest(content, false, QuestType.valueOf(type), game);
+        QuestType questType;
+        try {
+            questType = QuestType.valueOf(type.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("퀘스트 타입이 올바르지 않습니다. (DAILY 또는 WEEKLY)");
+        }
+
+        Quest quest = new Quest();
+        quest.setContent(content.trim());
+        quest.setCompleted(false);
+        quest.setType(questType);
+        quest.setGame(game);
         quest.setUser(user);
 
         return questRepository.save(quest);
     }
 
     public List<Quest> getQuestsByGame(Long gameId, User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("로그인이 필요합니다.");
+        }
+
         Game game = gameRepository.findByIdAndUser(gameId, user)
                 .orElseThrow(() -> new IllegalArgumentException("게임 정보를 찾을 수 없습니다."));
 
@@ -85,6 +137,10 @@ public class QuestService {
     }
 
     public Quest toggleQuest(Long questId, User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("로그인이 필요합니다.");
+        }
+
         Quest quest = questRepository.findByIdAndUser(questId, user)
                 .orElseThrow(() -> new IllegalArgumentException("퀘스트 정보를 찾을 수 없습니다."));
 
@@ -93,6 +149,10 @@ public class QuestService {
     }
 
     public void deleteQuest(Long questId, User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("로그인이 필요합니다.");
+        }
+
         Quest quest = questRepository.findByIdAndUser(questId, user)
                 .orElseThrow(() -> new IllegalArgumentException("퀘스트 정보를 찾을 수 없습니다."));
 
@@ -100,6 +160,10 @@ public class QuestService {
     }
 
     public ProgressResponse calculateProgress(User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("로그인이 필요합니다.");
+        }
+
         List<Quest> allQuests = questRepository.findByUser(user);
 
         long dailyTotal = allQuests.stream()

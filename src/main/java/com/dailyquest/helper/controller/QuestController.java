@@ -7,13 +7,14 @@ import com.dailyquest.helper.service.QuestService;
 import com.dailyquest.helper.user.User;
 import com.dailyquest.helper.user.UserService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/quests")
-@CrossOrigin(origins = "*")
 public class QuestController {
 
     private final QuestService questService;
@@ -27,35 +28,76 @@ public class QuestController {
     @GetMapping("/game/{gameId}")
     public List<Quest> getQuestsByGame(@PathVariable Long gameId, HttpSession session) {
         User user = userService.getLoginUser(session);
-        return questService.getQuestsByGame(gameId, user);
+
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        try {
+            return questService.getQuestsByGame(gameId, user);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     @PostMapping
     public Quest addQuest(@RequestBody QuestRequest request, HttpSession session) {
         User user = userService.getLoginUser(session);
-        return questService.addQuest(
-                request.getGameId(),
-                request.getContent(),
-                request.getType(),
-                user
-        );
+
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        try {
+            return questService.addQuest(
+                    request.getGameId(),
+                    request.getContent(),
+                    request.getType(),
+                    user
+            );
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     @PutMapping("/{id}/toggle")
     public Quest toggleQuest(@PathVariable Long id, HttpSession session) {
         User user = userService.getLoginUser(session);
-        return questService.toggleQuest(id, user);
+
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        try {
+            return questService.toggleQuest(id, user);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
     public void deleteQuest(@PathVariable Long id, HttpSession session) {
         User user = userService.getLoginUser(session);
-        questService.deleteQuest(id, user);
+
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        try {
+            questService.deleteQuest(id, user);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     @GetMapping("/progress")
     public ProgressResponse getProgress(HttpSession session) {
         User user = userService.getLoginUser(session);
+
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
         return questService.calculateProgress(user);
     }
 }
