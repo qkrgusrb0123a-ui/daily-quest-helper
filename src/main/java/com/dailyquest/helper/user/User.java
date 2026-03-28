@@ -14,17 +14,25 @@ public class User {
     @Column(nullable = false, unique = true, length = 50)
     private String username;
 
+    @Column(nullable = false, unique = true, length = 100)
+    private String email;
+
     @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
+    private boolean emailVerified;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
     public User() {}
 
-    public User(String username, String password) {
+    public User(String username, String email, String password, boolean emailVerified) {
         this.username = username;
+        this.email = email;
         this.password = password;
+        this.emailVerified = emailVerified;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -43,8 +51,16 @@ public class User {
         return username;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
     public String getPassword() {
         return password;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -59,8 +75,16 @@ public class User {
         this.username = username;
     }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {

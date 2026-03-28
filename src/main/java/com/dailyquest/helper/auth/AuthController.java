@@ -1,7 +1,10 @@
 package com.dailyquest.helper.auth;
 
+import com.dailyquest.helper.auth.dto.FindUsernameRequest;
 import com.dailyquest.helper.auth.dto.LoginRequest;
 import com.dailyquest.helper.auth.dto.RegisterRequest;
+import com.dailyquest.helper.auth.dto.ResetPasswordByEmailRequest;
+import com.dailyquest.helper.auth.dto.SendEmailCodeRequest;
 import com.dailyquest.helper.auth.dto.UpdatePasswordRequest;
 import com.dailyquest.helper.auth.dto.UpdateUsernameRequest;
 import jakarta.servlet.http.HttpSession;
@@ -19,6 +22,33 @@ public class AuthController {
 
     public AuthController(AuthService authService) {
         this.authService = authService;
+    }
+
+    @PostMapping("/send-register-code")
+    public ResponseEntity<?> sendRegisterCode(@Valid @RequestBody SendEmailCodeRequest request) {
+        authService.sendRegisterVerificationCode(request.getEmail());
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "회원가입 이메일 인증코드를 발송했습니다."
+        ));
+    }
+
+    @PostMapping("/send-find-username-code")
+    public ResponseEntity<?> sendFindUsernameCode(@Valid @RequestBody SendEmailCodeRequest request) {
+        authService.sendFindUsernameVerificationCode(request.getEmail());
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "아이디 찾기 인증코드를 발송했습니다."
+        ));
+    }
+
+    @PostMapping("/send-reset-password-code")
+    public ResponseEntity<?> sendResetPasswordCode(@Valid @RequestBody SendEmailCodeRequest request) {
+        authService.sendResetPasswordVerificationCode(request.getEmail());
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "비밀번호 재설정 인증코드를 발송했습니다."
+        ));
     }
 
     @PostMapping("/register")
@@ -64,6 +94,25 @@ public class AuthController {
                 "loggedIn", true,
                 "userId", userId,
                 "username", username
+        ));
+    }
+
+    @PostMapping("/find-username")
+    public ResponseEntity<?> findUsername(@Valid @RequestBody FindUsernameRequest request) {
+        String maskedUsername = authService.findMaskedUsername(request);
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "아이디를 찾았습니다.",
+                "maskedUsername", maskedUsername
+        ));
+    }
+
+    @PostMapping("/reset-password-by-email")
+    public ResponseEntity<?> resetPasswordByEmail(@Valid @RequestBody ResetPasswordByEmailRequest request) {
+        authService.resetPasswordByEmail(request);
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "비밀번호가 재설정되었습니다. 새 비밀번호로 로그인해주세요."
         ));
     }
 
