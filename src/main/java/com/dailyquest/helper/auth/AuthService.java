@@ -121,7 +121,7 @@ public class AuthService {
         List<Game> userGames = gameRepository.findByUser(user);
 
         for (Game game : userGames) {
-            List<Quest> userGameQuests = questRepository.findByUserAndGame(user, game);
+            List<Quest> userGameQuests = questRepository.findByUserAndGameOrderByIdAsc(user, game);
             if (!userGameQuests.isEmpty()) {
                 questRepository.deleteAll(userGameQuests);
             }

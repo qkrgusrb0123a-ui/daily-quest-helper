@@ -129,7 +129,7 @@ public class QuestService {
         Game game = gameRepository.findByIdAndUser(gameId, user)
                 .orElseThrow(() -> new IllegalArgumentException("게임 정보를 찾을 수 없습니다."));
 
-        return questRepository.findByUserAndGame(user, game);
+        return questRepository.findByUserAndGameOrderByIdAsc(user, game);
     }
 
     public Quest toggleQuest(Long questId, User user) {
