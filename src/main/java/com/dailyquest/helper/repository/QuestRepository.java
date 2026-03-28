@@ -21,6 +21,8 @@ public interface QuestRepository extends JpaRepository<Quest, Long> {
 
     List<Quest> findByUserAndGameOrderByIdAsc(User user, Game game);
 
+    List<Quest> findByUserAndGameAndType(User user, Game game);
+
     List<Quest> findByUserAndGameAndType(User user, Game game, QuestType type);
 
     Optional<Quest> findByIdAndUser(Long id, User user);
