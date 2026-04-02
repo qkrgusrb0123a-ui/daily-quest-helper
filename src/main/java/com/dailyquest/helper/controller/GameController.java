@@ -65,6 +65,26 @@ public class GameController {
         }
     }
 
+    @PutMapping("/{gameId}")
+    public Game updateGameName(@PathVariable Long gameId,
+                               @RequestBody GameRequest request,
+                               HttpSession session) {
+        User user = userService.getLoginUser(session);
+
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        try {
+            return questService.updateGameName(gameId, request.getName(), user);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "게임 이름 수정 중 오류가 발생했습니다.");
+        }
+    }
+
     @PutMapping("/{gameId}/reset-times")
     public Game updateResetTimes(@PathVariable Long gameId,
                                  @RequestBody GameRequest request,

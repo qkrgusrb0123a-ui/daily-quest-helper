@@ -1,6 +1,7 @@
 package com.dailyquest.helper.controller;
 
 import com.dailyquest.helper.auth.ProgressResponse;
+import com.dailyquest.helper.auth.QuestOrderRequest;
 import com.dailyquest.helper.auth.QuestRequest;
 import com.dailyquest.helper.entity.Quest;
 import com.dailyquest.helper.service.QuestService;
@@ -63,6 +64,49 @@ public class QuestController {
         } catch (Exception e) {
             e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "퀘스트 추가 중 오류가 발생했습니다.");
+        }
+    }
+
+    @PutMapping("/{id}")
+    public Quest updateQuest(@PathVariable Long id,
+                             @RequestBody QuestRequest request,
+                             HttpSession session) {
+        User user = userService.getLoginUser(session);
+
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        try {
+            return questService.updateQuestContent(id, request.getContent(), user);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "퀘스트 수정 중 오류가 발생했습니다.");
+        }
+    }
+
+    @PutMapping("/{id}/order")
+    public void updateQuestOrder(@PathVariable Long id,
+                                 @RequestBody QuestOrderRequest request,
+                                 HttpSession session) {
+        User user = userService.getLoginUser(session);
+
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        try {
+            if (request.getSortOrder() == null) {
+                throw new IllegalArgumentException("변경할 순서가 필요합니다.");
+            }
+            questService.updateQuestOrder(id, request.getSortOrder(), user);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "퀘스트 순서 변경 중 오류가 발생했습니다.");
         }
     }
 

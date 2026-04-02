@@ -8,6 +8,7 @@ import com.dailyquest.helper.repository.GameRepository;
 import com.dailyquest.helper.repository.QuestRepository;
 import com.dailyquest.helper.user.User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -48,6 +49,21 @@ public class QuestService {
         }
 
         return gameRepository.findByUser(user);
+    }
+
+    public Game updateGameName(Long gameId, String name, User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("로그인이 필요합니다.");
+        }
+        if (isBlank(name)) {
+            throw new IllegalArgumentException("게임 이름을 입력해주세요.");
+        }
+
+        Game game = gameRepository.findByIdAndUser(gameId, user)
+                .orElseThrow(() -> new IllegalArgumentException("게임 정보를 찾을 수 없습니다."));
+
+        game.setName(name.trim());
+        return gameRepository.save(game);
     }
 
     public void deleteGame(Long gameId, User user) {
@@ -115,8 +131,11 @@ public class QuestService {
             throw new IllegalArgumentException("퀘스트 타입이 올바르지 않습니다.");
         }
 
+        int nextOrder = questRepository.findByUserAndGameAndTypeOrderBySortOrderAscIdAsc(user, game, questType).size();
+
         Quest quest = new Quest(content.trim(), false, questType, game);
         quest.setUser(user);
+        quest.setSortOrder(nextOrder);
 
         return questRepository.save(quest);
     }
@@ -129,7 +148,7 @@ public class QuestService {
         Game game = gameRepository.findByIdAndUser(gameId, user)
                 .orElseThrow(() -> new IllegalArgumentException("게임 정보를 찾을 수 없습니다."));
 
-        return questRepository.findByUserAndGameOrderByIdAsc(user, game);
+        return questRepository.findByUserAndGameOrderBySortOrderAscIdAsc(user, game);
     }
 
     public Quest toggleQuest(Long questId, User user) {
@@ -144,6 +163,63 @@ public class QuestService {
         return questRepository.save(quest);
     }
 
+    public Quest updateQuestContent(Long questId, String content, User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("로그인이 필요합니다.");
+        }
+        if (isBlank(content)) {
+            throw new IllegalArgumentException("퀘스트 내용을 입력해주세요.");
+        }
+
+        Quest quest = questRepository.findByIdAndUser(questId, user)
+                .orElseThrow(() -> new IllegalArgumentException("퀘스트 정보를 찾을 수 없습니다."));
+
+        quest.setContent(content.trim());
+        return questRepository.save(quest);
+    }
+
+    @Transactional
+    public void updateQuestOrder(Long questId, int newIndex, User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("로그인이 필요합니다.");
+        }
+
+        Quest targetQuest = questRepository.findByIdAndUser(questId, user)
+                .orElseThrow(() -> new IllegalArgumentException("퀘스트 정보를 찾을 수 없습니다."));
+
+        List<Quest> sameTypeQuests = questRepository.findByUserAndGameAndTypeOrderBySortOrderAscIdAsc(
+                user,
+                targetQuest.getGame(),
+                targetQuest.getType()
+        );
+
+        int currentIndex = -1;
+        for (int i = 0; i < sameTypeQuests.size(); i++) {
+            if (sameTypeQuests.get(i).getId().equals(targetQuest.getId())) {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        if (currentIndex == -1) {
+            throw new IllegalArgumentException("퀘스트 순서를 변경할 수 없습니다.");
+        }
+
+        int boundedIndex = Math.max(0, Math.min(newIndex, sameTypeQuests.size() - 1));
+        if (currentIndex == boundedIndex) {
+            return;
+        }
+
+        Quest moved = sameTypeQuests.remove(currentIndex);
+        sameTypeQuests.add(boundedIndex, moved);
+
+        for (int i = 0; i < sameTypeQuests.size(); i++) {
+            sameTypeQuests.get(i).setSortOrder(i);
+        }
+
+        questRepository.saveAll(sameTypeQuests);
+    }
+
     public void deleteQuest(Long questId, User user) {
         if (user == null) {
             throw new IllegalArgumentException("로그인이 필요합니다.");
@@ -152,7 +228,10 @@ public class QuestService {
         Quest quest = questRepository.findByIdAndUser(questId, user)
                 .orElseThrow(() -> new IllegalArgumentException("퀘스트 정보를 찾을 수 없습니다."));
 
+        Game game = quest.getGame();
+        QuestType type = quest.getType();
         questRepository.delete(quest);
+        normalizeQuestOrders(user, game, type);
     }
 
     public ProgressResponse calculateProgress(User user) {
@@ -186,7 +265,7 @@ public class QuestService {
 
     public void resetDailyQuestsByGame(Game game) {
         User user = game.getUser();
-        List<Quest> quests = questRepository.findByUserAndGameAndType(user, game, QuestType.DAILY);
+        List<Quest> quests = questRepository.findByUserAndGameAndTypeOrderBySortOrderAscIdAsc(user, game, QuestType.DAILY);
 
         for (Quest quest : quests) {
             quest.setCompleted(false);
@@ -197,12 +276,20 @@ public class QuestService {
 
     public void resetWeeklyQuestsByGame(Game game) {
         User user = game.getUser();
-        List<Quest> quests = questRepository.findByUserAndGameAndType(user, game, QuestType.WEEKLY);
+        List<Quest> quests = questRepository.findByUserAndGameAndTypeOrderBySortOrderAscIdAsc(user, game, QuestType.WEEKLY);
 
         for (Quest quest : quests) {
             quest.setCompleted(false);
         }
 
+        questRepository.saveAll(quests);
+    }
+
+    private void normalizeQuestOrders(User user, Game game, QuestType type) {
+        List<Quest> quests = questRepository.findByUserAndGameAndTypeOrderBySortOrderAscIdAsc(user, game, type);
+        for (int i = 0; i < quests.size(); i++) {
+            quests.get(i).setSortOrder(i);
+        }
         questRepository.saveAll(quests);
     }
 

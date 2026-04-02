@@ -18,13 +18,16 @@ public class Quest {
     @Enumerated(EnumType.STRING)
     private QuestType type;
 
+    @Column(nullable = false)
+    private int sortOrder = 0;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "game_id", nullable = false)
     @JsonIgnore
     private Game game;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = true)
+    @JoinColumn(name = "user_id")
     @JsonIgnore
     private User user;
 
@@ -54,6 +57,10 @@ public class Quest {
         return type;
     }
 
+    public int getSortOrder() {
+        return sortOrder;
+    }
+
     public Game getGame() {
         return game;
     }
@@ -76,6 +83,10 @@ public class Quest {
 
     public void setType(QuestType type) {
         this.type = type;
+    }
+
+    public void setSortOrder(int sortOrder) {
+        this.sortOrder = sortOrder;
     }
 
     public void setGame(Game game) {
