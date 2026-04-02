@@ -131,7 +131,7 @@ public class QuestService {
             throw new IllegalArgumentException("퀘스트 타입이 올바르지 않습니다.");
         }
 
-        int nextOrder = questRepository.findByUserAndGameAndTypeOrderBySortOrderAscIdAsc(user, game, questType).size();
+        int nextOrder = questRepository.findByUserAndGameAndTypeOrderBySortOrderAsc(user, game, questType).size();
 
         Quest quest = new Quest(content.trim(), false, questType, game);
         quest.setUser(user);
@@ -148,7 +148,7 @@ public class QuestService {
         Game game = gameRepository.findByIdAndUser(gameId, user)
                 .orElseThrow(() -> new IllegalArgumentException("게임 정보를 찾을 수 없습니다."));
 
-        return questRepository.findByUserAndGameOrderBySortOrderAscIdAsc(user, game);
+        return questRepository.findByUserAndGameOrderBySortOrderAsc(user, game);
     }
 
     public Quest toggleQuest(Long questId, User user) {
@@ -187,7 +187,7 @@ public class QuestService {
         Quest targetQuest = questRepository.findByIdAndUser(questId, user)
                 .orElseThrow(() -> new IllegalArgumentException("퀘스트 정보를 찾을 수 없습니다."));
 
-        List<Quest> sameTypeQuests = questRepository.findByUserAndGameAndTypeOrderBySortOrderAscIdAsc(
+        List<Quest> sameTypeQuests = questRepository.findByUserAndGameAndTypeOrderBySortOrderAsc(
                 user,
                 targetQuest.getGame(),
                 targetQuest.getType()
@@ -265,7 +265,7 @@ public class QuestService {
 
     public void resetDailyQuestsByGame(Game game) {
         User user = game.getUser();
-        List<Quest> quests = questRepository.findByUserAndGameAndTypeOrderBySortOrderAscIdAsc(user, game, QuestType.DAILY);
+        List<Quest> quests = questRepository.findByUserAndGameAndTypeOrderBySortOrderAsc(user, game, QuestType.DAILY);
 
         for (Quest quest : quests) {
             quest.setCompleted(false);
@@ -276,7 +276,7 @@ public class QuestService {
 
     public void resetWeeklyQuestsByGame(Game game) {
         User user = game.getUser();
-        List<Quest> quests = questRepository.findByUserAndGameAndTypeOrderBySortOrderAscIdAsc(user, game, QuestType.WEEKLY);
+        List<Quest> quests = questRepository.findByUserAndGameAndTypeOrderBySortOrderAsc(user, game, QuestType.WEEKLY);
 
         for (Quest quest : quests) {
             quest.setCompleted(false);
@@ -286,7 +286,7 @@ public class QuestService {
     }
 
     private void normalizeQuestOrders(User user, Game game, QuestType type) {
-        List<Quest> quests = questRepository.findByUserAndGameAndTypeOrderBySortOrderAscIdAsc(user, game, type);
+        List<Quest> quests = questRepository.findByUserAndGameAndTypeOrderBySortOrderAsc(user, game, type);
         for (int i = 0; i < quests.size(); i++) {
             quests.get(i).setSortOrder(i);
         }
