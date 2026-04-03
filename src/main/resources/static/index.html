@@ -80,7 +80,7 @@
         }
 
         select {
-            width: 250px;
+            width: 360px;
             padding: 12px;
             font-size: 16px;
             border: 1px solid #cfd6df;
@@ -192,6 +192,7 @@
             <select id="gameSelect" onchange="loadQuestsBySelectedGame()">
                 <option value="">게임을 선택하세요</option>
             </select>
+            <div id="selectedGameProgressHint" style="color:#5b6b80;font-size:14px;"></div>
         </div>
 
         <div class="quest-section">
@@ -286,6 +287,41 @@
         }
     }
 
+
+    function calculateProgressFromQuests(quests) {
+        const dailyQuests = quests.filter(q => q.type === "DAILY");
+        const weeklyQuests = quests.filter(q => q.type === "WEEKLY");
+
+        const dailyCompleted = dailyQuests.filter(q => q.completed).length;
+        const weeklyCompleted = weeklyQuests.filter(q => q.completed).length;
+
+        return {
+            dailyProgress: dailyQuests.length === 0 ? 0 : Math.round((dailyCompleted * 100) / dailyQuests.length),
+            weeklyProgress: weeklyQuests.length === 0 ? 0 : Math.round((weeklyCompleted * 100) / weeklyQuests.length)
+        };
+    }
+
+    function formatGameOptionLabel(game, quests) {
+        const progress = calculateProgressFromQuests(quests || []);
+        return `${game.name}  |  일일 ${progress.dailyProgress}% · 주간 ${progress.weeklyProgress}%`;
+    }
+
+    function updateSelectedGameHint() {
+        const select = document.getElementById("gameSelect");
+        const hint = document.getElementById("selectedGameProgressHint");
+        if (!select || !hint) return;
+
+        const option = select.options[select.selectedIndex];
+        if (!option || !option.value) {
+            hint.textContent = "";
+            return;
+        }
+
+        const daily = option.dataset.dailyProgress || '0';
+        const weekly = option.dataset.weeklyProgress || '0';
+        hint.textContent = `선택한 게임 진행도 · 일일 ${daily}% / 주간 ${weekly}%`;
+    }
+
     async function checkLoginStatus() {
         try {
             const response = await fetch(`${authApi}/me`);
@@ -339,6 +375,7 @@
             setGuestMode();
             clearQuestLists();
             updateProgressBars(0, 0);
+            updateSelectedGameHint();
         } catch (error) {
             console.error("로그아웃 실패:", error);
             alert("로그아웃에 실패했습니다.");
@@ -370,18 +407,33 @@
                 gameSelect.appendChild(option);
                 clearQuestLists();
                 updateProgressBars(0, 0);
+                updateSelectedGameHint();
                 return;
+            }
+
+            const gameQuestMap = {};
+            for (const game of games) {
+                const questResponse = await fetch(`${questApi}/game/${game.id}`);
+                if (!questResponse.ok) {
+                    throw new Error("퀘스트 목록 조회 실패");
+                }
+                gameQuestMap[game.id] = await questResponse.json();
             }
 
             games.forEach((game, index) => {
                 const option = document.createElement("option");
+                const quests = gameQuestMap[game.id] || [];
+                const progress = calculateProgressFromQuests(quests);
                 option.value = game.id;
-                option.textContent = game.name;
+                option.textContent = formatGameOptionLabel(game, quests);
+                option.dataset.dailyProgress = progress.dailyProgress;
+                option.dataset.weeklyProgress = progress.weeklyProgress;
                 if (index === 0) option.selected = true;
                 gameSelect.appendChild(option);
             });
 
             await loadQuestsBySelectedGame();
+            updateSelectedGameHint();
         } catch (error) {
             console.error("게임 목록 불러오기 실패:", error);
         }
@@ -399,18 +451,24 @@
             gameSelect.appendChild(option);
             clearQuestLists();
             updateProgressBars(0, 0);
+            updateSelectedGameHint();
             return;
         }
 
         guestGames.forEach((game, index) => {
             const option = document.createElement("option");
+            const quests = guestQuestsByGame[game.id] || [];
+            const progress = calculateProgressFromQuests(quests);
             option.value = game.id;
-            option.textContent = game.name;
+            option.textContent = formatGameOptionLabel(game, quests);
+            option.dataset.dailyProgress = progress.dailyProgress;
+            option.dataset.weeklyProgress = progress.weeklyProgress;
             if (index === 0) option.selected = true;
             gameSelect.appendChild(option);
         });
 
         loadQuestsBySelectedGame();
+        updateSelectedGameHint();
     }
 
     async function loadQuestsBySelectedGame() {
@@ -419,6 +477,7 @@
         if (!gameId) {
             clearQuestLists();
             updateProgressBars(0, 0);
+            updateSelectedGameHint();
             return;
         }
 
@@ -426,6 +485,7 @@
             const quests = guestQuestsByGame[gameId] || [];
             renderQuestLists(quests);
             loadProgressFromQuests(quests);
+            updateSelectedGameHint();
             return;
         }
 
@@ -439,6 +499,7 @@
             const quests = await response.json();
             renderQuestLists(quests);
             loadProgressFromQuests(quests);
+            updateSelectedGameHint();
         } catch (error) {
             console.error("퀘스트 목록 불러오기 실패:", error);
             clearQuestLists();
@@ -507,6 +568,7 @@
 
             renderQuestLists(quests);
             loadProgressFromQuests(quests);
+            updateSelectedGameHint();
             return;
         }
 
@@ -527,16 +589,8 @@
     }
 
     function loadProgressFromQuests(quests) {
-        const dailyQuests = quests.filter(q => q.type === "DAILY");
-        const weeklyQuests = quests.filter(q => q.type === "WEEKLY");
-
-        const dailyCompleted = dailyQuests.filter(q => q.completed).length;
-        const weeklyCompleted = weeklyQuests.filter(q => q.completed).length;
-
-        const dailyProgress = dailyQuests.length === 0 ? 0 : Math.round((dailyCompleted * 100) / dailyQuests.length);
-        const weeklyProgress = weeklyQuests.length === 0 ? 0 : Math.round((weeklyCompleted * 100) / weeklyQuests.length);
-
-        updateProgressBars(dailyProgress, weeklyProgress);
+        const progress = calculateProgressFromQuests(quests);
+        updateProgressBars(progress.dailyProgress, progress.weeklyProgress);
     }
 
     function updateProgressBars(daily, weekly) {

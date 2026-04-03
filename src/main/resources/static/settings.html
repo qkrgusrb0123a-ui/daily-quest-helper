@@ -259,10 +259,97 @@
             display: flex;
         }
 
-        .reset-inline-box input[type="time"] {
-            padding: 8px 10px;
-            border: 1px solid #cfd6df;
-            border-radius: 6px;
+        .reset-inline-box {
+            align-items: stretch;
+            gap: 12px;
+            padding: 14px;
+            background: linear-gradient(180deg, #f9fbff 0%, #f2f7ff 100%);
+        }
+
+        .reset-inline-box-label {
+            min-width: 120px;
+            font-weight: bold;
+            color: #23497c;
+            display: flex;
+            align-items: center;
+        }
+
+        .time-picker-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .time-select-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .time-select-wrap label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #5b6b80;
+        }
+
+        .time-select-wrap select {
+            min-width: 96px;
+            padding: 10px 12px;
+            border: 1px solid #b9c7d8;
+            border-radius: 10px;
+            background: white;
+            color: #23497c;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.04);
+        }
+
+        .time-colon {
+            font-size: 24px;
+            font-weight: bold;
+            color: #23497c;
+            padding-top: 18px;
+        }
+
+        .time-preview-badge {
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: #dfeafb;
+            color: #23497c;
+            font-size: 14px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .progress-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .progress-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: bold;
+            background: #e9f0f8;
+            color: #23497c;
+        }
+
+        .progress-badge.daily {
+            background: #eaf7e5;
+            color: #3f7e2c;
+        }
+
+        .progress-badge.weekly {
+            background: #e8f2ff;
+            color: #2f68af;
         }
 
         .quest-list {
@@ -361,6 +448,14 @@
                 width: 100%;
                 justify-content: flex-end;
             }
+
+            .time-picker-group {
+                width: 100%;
+            }
+
+            .reset-inline-box-label {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -450,6 +545,74 @@
         if (Array.isArray(game.quests)) return game.quests;
         if (!isLoggedIn) return guestQuestsByGame[gameId] || [];
         return [];
+    }
+
+
+    function calculateProgress(quests, type) {
+        const filtered = quests.filter(q => q.type === type);
+        if (filtered.length === 0) return 0;
+        const completedCount = filtered.filter(q => q.completed).length;
+        return Math.round((completedCount * 100) / filtered.length);
+    }
+
+    function getTimeParts(timeText) {
+        const safeTime = /^\d{2}:\d{2}$/.test(timeText || '') ? timeText : '00:00';
+        const [hour, minute] = safeTime.split(':');
+        return { hour, minute };
+    }
+
+    function buildNumberOptions(max, selectedValue) {
+        return Array.from({ length: max + 1 }, (_, value) => {
+            const text = String(value).padStart(2, '0');
+            const selected = text === selectedValue ? 'selected' : '';
+            return `<option value="${text}" ${selected}>${text}</option>`;
+        }).join('');
+    }
+
+    function renderTimePicker(gameId, type, value) {
+        const timeParts = getTimeParts(value);
+        const prefix = type.toLowerCase();
+        const previewText = `${timeParts.hour}:${timeParts.minute}`;
+
+        return `
+            <div class="reset-inline-box-label">${type === 'DAILY' ? '일일' : '주간'} 초기화 시간</div>
+            <div class="time-picker-group">
+                <div class="time-select-wrap">
+                    <label for="${prefix}ResetHour-${gameId}">시간</label>
+                    <select id="${prefix}ResetHour-${gameId}" onchange="updateTimePreview(${gameId}, '${type}')">
+                        ${buildNumberOptions(23, timeParts.hour)}
+                    </select>
+                </div>
+                <div class="time-colon">:</div>
+                <div class="time-select-wrap">
+                    <label for="${prefix}ResetMinute-${gameId}">분</label>
+                    <select id="${prefix}ResetMinute-${gameId}" onchange="updateTimePreview(${gameId}, '${type}')">
+                        ${buildNumberOptions(59, timeParts.minute)}
+                    </select>
+                </div>
+                <div class="time-preview-badge" id="${prefix}ResetPreview-${gameId}">선택 시간 ${previewText}</div>
+                <button type="button" class="mini-btn" onclick="saveSingleResetTime(${gameId}, '${type}')">저장</button>
+            </div>
+        `;
+    }
+
+    function getTimePickerValue(gameId, type, fallbackValue) {
+        const prefix = type.toLowerCase();
+        const hour = document.getElementById(`${prefix}ResetHour-${gameId}`)?.value;
+        const minute = document.getElementById(`${prefix}ResetMinute-${gameId}`)?.value;
+        if (hour == null || minute == null) {
+            return fallbackValue || '00:00';
+        }
+        return `${hour}:${minute}`;
+    }
+
+    function updateTimePreview(gameId, type) {
+        const prefix = type.toLowerCase();
+        const value = getTimePickerValue(gameId, type, '00:00');
+        const preview = document.getElementById(`${prefix}ResetPreview-${gameId}`);
+        if (preview) {
+            preview.textContent = `선택 시간 ${value}`;
+        }
     }
 
     function getResetValue(game, type) {
@@ -546,7 +709,13 @@
                 <div class="game-title-row">
                     <div class="game-title-left">
                         <button type="button" class="collapse-btn" onclick="toggleCollapse(${game.id})" title="접기/펼치기">≣</button>
-                        <div class="game-title-text">${escapeHtml(game.name)}</div>
+                        <div>
+                            <div class="game-title-text">${escapeHtml(game.name)}</div>
+                            <div class="progress-badges">
+                                <span class="progress-badge daily">일일 ${calculateProgress(allQuests, 'DAILY')}%</span>
+                                <span class="progress-badge weekly">주간 ${calculateProgress(allQuests, 'WEEKLY')}%</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="game-title-right">
                         <button type="button" class="mini-btn" onclick="renameGame(${game.id})">이름 수정</button>
@@ -568,9 +737,7 @@
                             <button type="button" class="mini-btn" onclick="toggleResetPanel(${game.id}, 'DAILY')">초기화 시간</button>
                         </div>
                         <div class="reset-inline-box ${dailyPanelOpen ? 'show' : ''}">
-                            <span>일일 초기화 시간</span>
-                            <input type="time" id="dailyResetTime-${game.id}" value="${escapeHtml(getResetValue(game, 'DAILY'))}">
-                            <button type="button" class="mini-btn" onclick="saveSingleResetTime(${game.id}, 'DAILY')">저장</button>
+                            ${renderTimePicker(game.id, 'DAILY', getResetValue(game, 'DAILY'))}
                         </div>
                         <div class="quest-list" data-game-id="${game.id}" data-type="DAILY">
                             ${renderQuestList(dailyQuests, game.id, 'DAILY')}
@@ -583,9 +750,7 @@
                             <button type="button" class="mini-btn" onclick="toggleResetPanel(${game.id}, 'WEEKLY')">초기화 시간</button>
                         </div>
                         <div class="reset-inline-box ${weeklyPanelOpen ? 'show' : ''}">
-                            <span>주간 초기화 시간</span>
-                            <input type="time" id="weeklyResetTime-${game.id}" value="${escapeHtml(getResetValue(game, 'WEEKLY'))}">
-                            <button type="button" class="mini-btn" onclick="saveSingleResetTime(${game.id}, 'WEEKLY')">저장</button>
+                            ${renderTimePicker(game.id, 'WEEKLY', getResetValue(game, 'WEEKLY'))}
                         </div>
                         <div class="quest-list" data-game-id="${game.id}" data-type="WEEKLY">
                             ${renderQuestList(weeklyQuests, game.id, 'WEEKLY')}
@@ -810,8 +975,8 @@
         const game = getCurrentGames().find(g => g.id === gameId);
         if (!game) return;
 
-        const dailyResetTime = document.getElementById(`dailyResetTime-${gameId}`)?.value || game.dailyResetTime || '00:00';
-        const weeklyResetTime = document.getElementById(`weeklyResetTime-${gameId}`)?.value || game.weeklyResetTime || '00:00';
+        const dailyResetTime = getTimePickerValue(gameId, 'DAILY', game.dailyResetTime || '00:00');
+        const weeklyResetTime = getTimePickerValue(gameId, 'WEEKLY', game.weeklyResetTime || '00:00');
 
         if (!isLoggedIn) {
             game.dailyResetTime = dailyResetTime;
