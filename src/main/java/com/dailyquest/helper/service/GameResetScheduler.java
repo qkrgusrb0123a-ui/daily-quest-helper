@@ -24,7 +24,7 @@ public class GameResetScheduler {
         this.questService = questService;
     }
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = 60000)
     public void checkAndResetQuests() {
         List<Game> games = gameRepository.findAll();
 
@@ -36,34 +36,56 @@ public class GameResetScheduler {
 
         for (Game game : games) {
             try {
+                if (game.getUser() == null) {
+                    System.out.println("[Scheduler] skip game because user is null: " + game.getName());
+                    continue;
+                }
+
+                boolean changed = false;
+
                 String dailyText = game.getDailyResetTime();
                 String weeklyText = game.getWeeklyResetTime();
 
                 if (dailyText == null || dailyText.isBlank()) {
                     dailyText = "00:00";
                     game.setDailyResetTime(dailyText);
+                    changed = true;
                 }
 
                 if (weeklyText == null || weeklyText.isBlank()) {
                     weeklyText = "00:00";
                     game.setWeeklyResetTime(weeklyText);
+                    changed = true;
                 }
 
                 if (game.getLastDailyResetDate() == null) {
                     game.setLastDailyResetDate("");
+                    changed = true;
                 }
 
                 if (game.getLastWeeklyResetDate() == null) {
                     game.setLastWeeklyResetDate("");
+                    changed = true;
                 }
 
-                LocalTime dailyResetTime = LocalTime.parse(dailyText);
-                LocalTime weeklyResetTime = LocalTime.parse(weeklyText);
+                LocalTime dailyResetTime;
+                LocalTime weeklyResetTime;
+
+                try {
+                    dailyResetTime = LocalTime.parse(dailyText);
+                    weeklyResetTime = LocalTime.parse(weeklyText);
+                } catch (Exception e) {
+                    System.out.println("[Scheduler] invalid reset time for game: " + game.getName()
+                            + ", dailyResetTime=" + dailyText
+                            + ", weeklyResetTime=" + weeklyText);
+                    continue;
+                }
 
                 if (!todayText.equals(game.getLastDailyResetDate()) && !now.isBefore(dailyResetTime)) {
                     System.out.println("[Scheduler] Daily reset: " + game.getName());
                     questService.resetDailyQuestsByGame(game);
                     game.setLastDailyResetDate(todayText);
+                    changed = true;
                 }
 
                 boolean isWeeklyResetDay = today.getDayOfWeek() == DayOfWeek.MONDAY;
@@ -74,9 +96,12 @@ public class GameResetScheduler {
                     System.out.println("[Scheduler] Weekly reset: " + game.getName());
                     questService.resetWeeklyQuestsByGame(game);
                     game.setLastWeeklyResetDate(todayText);
+                    changed = true;
                 }
 
-                gameRepository.save(game);
+                if (changed) {
+                    gameRepository.save(game);
+                }
 
             } catch (Exception e) {
                 System.out.println("[Scheduler] reset error for game: " + game.getName()
