@@ -55,6 +55,11 @@
             border: 1px solid rgba(255,255,255,0.2);
         }
 
+        .save-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .content {
             padding: 26px;
         }
@@ -364,7 +369,7 @@
     <div class="header">
         <button class="back-btn" onclick="goBack()">← 돌아가기</button>
         설정
-        <button class="save-btn" onclick="saveAndGoMain()">저장</button>
+        <button id="saveBtn" class="save-btn" onclick="saveAndGoMain()">저장</button>
     </div>
 
     <div class="content">
@@ -391,11 +396,20 @@
     const collapsedGameIds = new Set();
     const resetPanelState = {};
     let draggedQuestInfo = null;
+    let isSavingQuestOrder = false;
 
     let guestGames = [];
     let guestQuestsByGame = {};
     let guestGameIdSeq = 1;
     let guestQuestIdSeq = 1;
+
+    function setSaveButtonDisabled(disabled) {
+        const saveBtn = document.getElementById("saveBtn");
+        if (saveBtn) {
+            saveBtn.disabled = disabled;
+            saveBtn.textContent = disabled ? "저장 중..." : "저장";
+        }
+    }
 
     function loadGuestDataFromSession() {
         try {
@@ -669,32 +683,49 @@
 
     async function moveQuest(dragInfo, targetIndex) {
         if (!dragInfo) return;
+
         if (!isLoggedIn) {
-            const list = (guestQuestsByGame[dragInfo.gameId] || []).filter(q => q.type === dragInfo.type);
             const all = guestQuestsByGame[dragInfo.gameId] || [];
-            const moving = list.splice(dragInfo.index, 1)[0];
+            const sameTypeList = all.filter(q => q.type === dragInfo.type);
+            const moving = sameTypeList.splice(dragInfo.index, 1)[0];
             if (!moving) return;
-            list.splice(targetIndex, 0, moving);
-            const others = all.filter(q => q.type !== dragInfo.type);
-            guestQuestsByGame[dragInfo.gameId] = [...list, ...others];
+
+            sameTypeList.splice(targetIndex, 0, moving);
+
+            sameTypeList.forEach((q, idx) => {
+                q.sortOrder = idx;
+            });
+
+            const otherTypeList = all.filter(q => q.type !== dragInfo.type);
+            guestQuestsByGame[dragInfo.gameId] = [...sameTypeList, ...otherTypeList];
             saveGuestDataToSession();
             renderGameList();
             return;
         }
 
         try {
+            isSavingQuestOrder = true;
+            setSaveButtonDisabled(true);
+
             const response = await fetch(`${questApi}/${dragInfo.questId}/order`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify({ sortOrder: targetIndex })
             });
+
             const text = await response.text();
-            if (!response.ok) throw new Error(text || '순서 변경 실패');
+            if (!response.ok) {
+                throw new Error(text || '순서 변경 실패');
+            }
+
             await loadGames();
         } catch (error) {
             console.error('퀘스트 순서 변경 실패:', error);
             alert(`퀘스트 순서 변경에 실패했습니다.\n${error.message}`);
+        } finally {
+            isSavingQuestOrder = false;
+            setSaveButtonDisabled(false);
         }
     }
 
@@ -742,8 +773,10 @@
     async function renameGame(gameId) {
         const game = getCurrentGames().find(g => g.id === gameId);
         if (!game) return;
+
         const nextName = prompt('수정할 게임 이름을 입력하세요.', game.name);
         if (nextName === null) return;
+
         const trimmed = nextName.trim();
         if (!trimmed) {
             alert('게임 이름을 입력해주세요.');
@@ -817,7 +850,13 @@
 
         if (!isLoggedIn) {
             if (!guestQuestsByGame[gameId]) guestQuestsByGame[gameId] = [];
-            guestQuestsByGame[gameId].push({ id: guestQuestIdSeq++, content, type, completed: false, sortOrder: guestQuestsByGame[gameId].filter(q => q.type === type).length });
+            guestQuestsByGame[gameId].push({
+                id: guestQuestIdSeq++,
+                content,
+                type,
+                completed: false,
+                sortOrder: guestQuestsByGame[gameId].filter(q => q.type === type).length
+            });
             saveGuestDataToSession();
             input.value = '';
             renderGameList();
@@ -844,8 +883,10 @@
     async function renameQuest(questId, gameId) {
         const quest = getQuestsForGame(gameId).find(q => q.id === questId);
         if (!quest) return;
+
         const nextText = prompt('수정할 퀘스트 내용을 입력하세요.', quest.content);
         if (nextText === null) return;
+
         const trimmed = nextText.trim();
         if (!trimmed) {
             alert('퀘스트 내용을 입력해주세요.');
@@ -886,7 +927,10 @@
         }
 
         try {
-            const response = await fetch(`${questApi}/${questId}`, { method: 'DELETE', credentials: 'include' });
+            const response = await fetch(`${questApi}/${questId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
             const text = await response.text();
             if (!response.ok) throw new Error(text || '퀘스트 삭제 실패');
             await loadGames();
@@ -908,7 +952,10 @@
         }
 
         try {
-            const response = await fetch(`${gameApi}/${gameId}`, { method: 'DELETE', credentials: 'include' });
+            const response = await fetch(`${gameApi}/${gameId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
             const text = await response.text();
             if (!response.ok) throw new Error(text || '게임 삭제 실패');
             await loadGames();
@@ -919,10 +966,18 @@
     }
 
     function saveAndGoMain() {
+        if (isSavingQuestOrder) {
+            alert('퀘스트 순서를 저장 중입니다. 잠시 후 다시 눌러주세요.');
+            return;
+        }
         window.location.href = '/index.html';
     }
 
     function goBack() {
+        if (isSavingQuestOrder) {
+            alert('퀘스트 순서를 저장 중입니다. 잠시 후 다시 이동해주세요.');
+            return;
+        }
         window.location.href = '/index.html';
     }
 
