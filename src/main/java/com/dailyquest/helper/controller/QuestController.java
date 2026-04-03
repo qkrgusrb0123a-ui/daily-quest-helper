@@ -98,10 +98,27 @@ public class QuestController {
         }
 
         try {
-            if (request.getSortOrder() == null) {
+            Integer targetIndex = null;
+
+            // 프론트가 sortOrder로 보내는 경우
+            try {
+                targetIndex = request.getSortOrder();
+            } catch (Exception ignored) {
+            }
+
+            // 프론트가 newIndex로 보내는 경우
+            if (targetIndex == null) {
+                try {
+                    targetIndex = request.getNewIndex();
+                } catch (Exception ignored) {
+                }
+            }
+
+            if (targetIndex == null) {
                 throw new IllegalArgumentException("변경할 순서가 필요합니다.");
             }
-            questService.updateQuestOrder(id, request.getSortOrder(), user);
+
+            questService.updateQuestOrder(id, targetIndex, user);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
