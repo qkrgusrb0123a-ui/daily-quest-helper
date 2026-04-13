@@ -254,7 +254,7 @@
 <div class="container">
     <div class="header">
         <button class="back-btn" onclick="goBack()">← 돌아가기</button>
-        로그인 / 회원가입 / 계정 찾기
+        로그인
     </div>
 
     <div class="content">
@@ -317,14 +317,12 @@
             <div class="guide-box">
                 <div id="guideText">
                     로그인하면 사용자별로 게임과 퀘스트가 저장됩니다.<br>
-                    이메일은 계정 생성 및 아이디, 비밀번호 재설정에만 사용됩니다.<br>
-                    비밀번호는 암호화되어 저장됩니다.<br>
                     회원탈퇴는 로그인 후 계정설정에서 하실 수 있습니다.
                 </div>
                 <ul id="ruleBox" class="rule-list hidden">
                     <li>비밀번호는 최소 8자 이상</li>
                     <li>특수문자 최소 1개 포함</li>
-                    <li>연속된 숫자 사용 금지 (예: 123, 777 등)</li>
+                    <li>연속된 숫자 사용 금지 (예: 123, 987, 777 등)</li>
                 </ul>
             </div>
         </div>
@@ -379,7 +377,7 @@
             loginSubLinks.classList.remove("hidden");
 
             guideText.innerHTML =
-                "로그인하면 사용자별로 게임과 퀘스트가 저장됩니다.<br>이메일 인증이 완료된 계정만 로그인할 수 있습니다.";
+                "로그인하면 사용자별로 게임과 퀘스트가 저장됩니다.<br>회원탈퇴는 로그인 후 계정설정에서 하실 수 있습니다.";
         } else if (mode === "register") {
             registerTabBtn.classList.add("active");
             formTitle.textContent = "회원가입";
@@ -395,7 +393,7 @@
             sendCodeBtn.textContent = "회원가입 코드 발송";
 
             guideText.innerHTML =
-                "이메일 인증코드를 먼저 발송한 뒤 회원가입을 완료해주세요.<br>이메일 인증이 끝난 계정만 생성됩니다.";
+                "이메일은 계정 생성 및 아이디, 비밀번호 재설정에만 사용됩니다.<br>비밀번호는 암호화되어 저장됩니다.";
         } else if (mode === "findUsername") {
             formTitle.textContent = "아이디 찾기";
             submitBtn.textContent = "아이디 찾기";
