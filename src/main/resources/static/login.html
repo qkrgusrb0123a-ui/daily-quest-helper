@@ -51,13 +51,6 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .sub-tab-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
             margin-bottom: 20px;
         }
 
@@ -70,6 +63,7 @@
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
+            transition: 0.2s ease;
         }
 
         .tab-btn.active {
@@ -151,6 +145,31 @@
             margin-top: 8px;
         }
 
+        .auth-link-row {
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .auth-text-link {
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0 8px;
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .auth-text-link:hover {
+            color: #23497c;
+            text-decoration: underline;
+        }
+
+        .auth-divider {
+            color: #b0b0b0;
+            font-size: 12px;
+        }
+
         .message {
             min-height: 22px;
             margin-top: 14px;
@@ -196,6 +215,39 @@
             color: #666;
             line-height: 1.5;
         }
+
+        @media (max-width: 768px) {
+            .container {
+                width: calc(100% - 24px);
+                margin: 20px auto;
+            }
+
+            .content {
+                padding: 24px 16px;
+            }
+
+            .header {
+                font-size: 20px;
+                padding: 18px 20px;
+            }
+
+            .back-btn {
+                top: 16px;
+                left: 14px;
+                font-size: 16px;
+            }
+
+            .password-row,
+            .code-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .toggle-btn,
+            .send-code-btn {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -209,11 +261,6 @@
         <div class="tab-row">
             <button id="loginTabBtn" class="tab-btn active" onclick="setMode('login')">로그인</button>
             <button id="registerTabBtn" class="tab-btn" onclick="setMode('register')">회원가입</button>
-        </div>
-
-        <div class="sub-tab-row">
-            <button id="findUsernameTabBtn" class="tab-btn" onclick="setMode('findUsername')">아이디 찾기</button>
-            <button id="resetPasswordTabBtn" class="tab-btn" onclick="setMode('resetPassword')">비밀번호 재설정</button>
         </div>
 
         <div class="form-card">
@@ -245,7 +292,7 @@
                     <button type="button" class="toggle-btn" onclick="togglePassword('password', this)">보기</button>
                 </div>
                 <div id="passwordHint" class="field-hint hidden">
-                    비밀번호는 8자 이상, 특수문자 포함, 연속된 숫자 사용 불가입니다.
+                    비밀번호는 8자 이상, 특수문자 포함하여 하며, 연속된 숫자는 사용이 불가능합니다.
                 </div>
             </div>
 
@@ -259,6 +306,12 @@
 
             <button id="submitBtn" class="submit-btn" onclick="submitAuth()">로그인</button>
 
+            <div id="loginSubLinks" class="auth-link-row">
+                <button type="button" class="auth-text-link" onclick="setMode('findUsername')">아이디 찾기</button>
+                <span class="auth-divider">|</span>
+                <button type="button" class="auth-text-link" onclick="setMode('resetPassword')">비밀번호 재설정</button>
+            </div>
+
             <div id="message" class="message"></div>
 
             <div class="guide-box">
@@ -267,9 +320,9 @@
                     회원가입 시 이메일 인증을 완료해야 계정이 생성됩니다.
                 </div>
                 <ul id="ruleBox" class="rule-list hidden">
-                    <li>비밀번호는 최소 8자 이상</li>
-                    <li>특수문자 최소 1개 포함</li>
-                    <li>연속된 숫자 사용 금지 (예: 123, 456, 789, 890)</li>
+                    <li>이메일은 계정 생성 및 아이디, 비밀번호 재설정에만 사용됩니다.</li>
+                    <li>비밀번호는 암호화되어 저장됩니다.</li>
+                    <li>회원탈퇴는 로그인 후 계정설정에서 하실 수 있습니다.</li>
                 </ul>
             </div>
         </div>
@@ -285,12 +338,11 @@
 
         const loginTabBtn = document.getElementById("loginTabBtn");
         const registerTabBtn = document.getElementById("registerTabBtn");
-        const findUsernameTabBtn = document.getElementById("findUsernameTabBtn");
-        const resetPasswordTabBtn = document.getElementById("resetPasswordTabBtn");
 
         const formTitle = document.getElementById("formTitle");
         const submitBtn = document.getElementById("submitBtn");
         const message = document.getElementById("message");
+        const loginSubLinks = document.getElementById("loginSubLinks");
 
         const usernameGroup = document.getElementById("usernameGroup");
         const emailGroup = document.getElementById("emailGroup");
@@ -302,7 +354,7 @@
         const guideText = document.getElementById("guideText");
         const sendCodeBtn = document.getElementById("sendCodeBtn");
 
-        [loginTabBtn, registerTabBtn, findUsernameTabBtn, resetPasswordTabBtn].forEach(btn => {
+        [loginTabBtn, registerTabBtn].forEach(btn => {
             btn.classList.remove("active");
         });
 
@@ -313,6 +365,7 @@
         confirmPasswordGroup.classList.add("hidden");
         passwordHint.classList.add("hidden");
         ruleBox.classList.add("hidden");
+        loginSubLinks.classList.add("hidden");
 
         if (mode === "login") {
             loginTabBtn.classList.add("active");
@@ -321,6 +374,7 @@
 
             usernameGroup.classList.remove("hidden");
             passwordGroup.classList.remove("hidden");
+            loginSubLinks.classList.remove("hidden");
 
             guideText.innerHTML =
                 "로그인하면 사용자별로 게임과 퀘스트가 저장됩니다.<br>이메일 인증이 완료된 계정만 로그인할 수 있습니다.";
@@ -341,7 +395,6 @@
             guideText.innerHTML =
                 "이메일 인증코드를 먼저 발송한 뒤 회원가입을 완료해주세요.<br>이메일 인증이 끝난 계정만 생성됩니다.";
         } else if (mode === "findUsername") {
-            findUsernameTabBtn.classList.add("active");
             formTitle.textContent = "아이디 찾기";
             submitBtn.textContent = "아이디 찾기";
 
@@ -352,7 +405,6 @@
             guideText.innerHTML =
                 "이메일 인증 후 등록된 아이디를 일부만 표시합니다.<br>해당 이메일로 가입된 계정이 없으면 '사용자 계정이 없습니다.'가 표시됩니다.";
         } else if (mode === "resetPassword") {
-            resetPasswordTabBtn.classList.add("active");
             formTitle.textContent = "비밀번호 재설정";
             submitBtn.textContent = "비밀번호 재설정";
 
