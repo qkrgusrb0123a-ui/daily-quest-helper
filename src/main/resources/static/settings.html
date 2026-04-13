@@ -540,13 +540,14 @@
     }
 
     function getQuestsForGame(gameId) {
+        if (!isLoggedIn) {
+            return guestQuestsByGame[gameId] || [];
+        }
+
         const game = getCurrentGames().find(g => g.id === gameId);
         if (!game) return [];
-        if (Array.isArray(game.quests)) return game.quests;
-        if (!isLoggedIn) return guestQuestsByGame[gameId] || [];
-        return [];
+        return Array.isArray(game.quests) ? game.quests : [];
     }
-
 
     function calculateProgress(quests, type) {
         const filtered = quests.filter(q => q.type === type);
@@ -910,7 +911,12 @@
 
         if (!isLoggedIn) {
             const gameId = guestGameIdSeq++;
-            guestGames.push({ id: gameId, name: gameName, dailyResetTime: '00:00', weeklyResetTime: '00:00', quests: [] });
+            guestGames.push({
+                id: gameId,
+                name: gameName,
+                dailyResetTime: '00:00',
+                weeklyResetTime: '00:00'
+            });
             guestQuestsByGame[gameId] = [];
             saveGuestDataToSession();
             input.value = '';
