@@ -71,6 +71,7 @@
             align-items: center;
             gap: 14px;
             margin-bottom: 24px;
+            flex-wrap: wrap;
         }
 
         .game-select-row label {
@@ -287,7 +288,6 @@
         }
     }
 
-
     function calculateProgressFromQuests(quests) {
         const dailyQuests = quests.filter(q => q.type === "DAILY");
         const weeklyQuests = quests.filter(q => q.type === "WEEKLY");
@@ -301,25 +301,57 @@
         };
     }
 
+    function calculateOverallProgress(gamesWithQuests) {
+        const allQuests = gamesWithQuests.flatMap(game => Array.isArray(game.quests) ? game.quests : []);
+        return calculateProgressFromQuests(allQuests);
+    }
+
     function formatGameOptionLabel(game, quests) {
         const progress = calculateProgressFromQuests(quests || []);
         return `${game.name}  |  일일 ${progress.dailyProgress}% · 주간 ${progress.weeklyProgress}%`;
     }
 
     function updateSelectedGameHint() {
-        const select = document.getElementById("gameSelect");
         const hint = document.getElementById("selectedGameProgressHint");
-        if (!select || !hint) return;
+        if (!hint) return;
 
-        const option = select.options[select.selectedIndex];
-        if (!option || !option.value) {
-            hint.textContent = "";
-            return;
+        if (isLoggedIn) {
+            loadOverallHintForLoggedIn();
+        } else {
+            const guestGameModels = guestGames.map(game => ({
+                ...game,
+                quests: guestQuestsByGame[game.id] || []
+            }));
+
+            const progress = calculateOverallProgress(guestGameModels);
+            hint.textContent = `전체 게임 진행도 · 일일 ${progress.dailyProgress}% / 주간 ${progress.weeklyProgress}%`;
         }
+    }
 
-        const daily = option.dataset.dailyProgress || '0';
-        const weekly = option.dataset.weeklyProgress || '0';
-        hint.textContent = `선택한 게임 진행도 · 일일 ${daily}% / 주간 ${weekly}%`;
+    async function loadOverallHintForLoggedIn() {
+        const hint = document.getElementById("selectedGameProgressHint");
+        if (!hint) return;
+
+        try {
+            const response = await fetch(gameApi);
+            if (!response.ok) throw new Error("전체 게임 조회 실패");
+
+            const games = await response.json();
+            const gameModels = [];
+
+            for (const game of games) {
+                const questResponse = await fetch(`${questApi}/game/${game.id}`);
+                if (!questResponse.ok) throw new Error("전체 퀘스트 조회 실패");
+                const quests = await questResponse.json();
+                gameModels.push({ ...game, quests });
+            }
+
+            const progress = calculateOverallProgress(gameModels);
+            hint.textContent = `전체 게임 진행도 · 일일 ${progress.dailyProgress}% / 주간 ${progress.weeklyProgress}%`;
+        } catch (error) {
+            console.error("전체 진행도 조회 실패:", error);
+            hint.textContent = `전체 게임 진행도 · 일일 0% / 주간 0%`;
+        }
     }
 
     async function checkLoginStatus() {
@@ -348,8 +380,8 @@
         currentUsername = "";
         document.getElementById("authBtn").textContent = "로그인";
         document.getElementById("statusBox").innerHTML =
-    `👤 <b>게스트</b> | 임시 데이터 (탭 종료 시 삭제)`;
-    
+            `👤 <b>게스트</b> | 임시 데이터 (탭 종료 시 삭제)`;
+
         loadGuestDataFromSession();
         renderGuestGames();
     }
@@ -433,7 +465,7 @@
             });
 
             await loadQuestsBySelectedGame();
-            updateSelectedGameHint();
+            await updateSelectedGameHint();
         } catch (error) {
             console.error("게임 목록 불러오기 실패:", error);
         }
@@ -499,7 +531,7 @@
             const quests = await response.json();
             renderQuestLists(quests);
             loadProgressFromQuests(quests);
-            updateSelectedGameHint();
+            await updateSelectedGameHint();
         } catch (error) {
             console.error("퀘스트 목록 불러오기 실패:", error);
             clearQuestLists();

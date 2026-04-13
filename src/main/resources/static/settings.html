@@ -40,19 +40,17 @@
             border-radius: 6px;
             font-size: 16px;
             padding: 10px 16px;
+            background: #3b73bd;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .back-btn {
             left: 20px;
-            background: transparent;
-            color: white;
         }
 
         .save-btn {
             right: 20px;
-            background: #3b73bd;
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .save-btn:disabled {
@@ -462,7 +460,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <button class="back-btn" onclick="goBack()">← 돌아가기</button>
+        <button class="back-btn" onclick="goBack()">돌아가기</button>
         설정
         <button id="saveBtn" class="save-btn" onclick="saveAndGoMain()">저장</button>
     </div>
