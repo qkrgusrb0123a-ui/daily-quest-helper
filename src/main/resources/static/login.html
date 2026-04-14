@@ -3,12 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>로그인 / 회원가입 / 계정 찾기</title>
+    <title>게임 일일 퀘스트 도우미 - 로그인</title>
     <style>
-        * {
-            box-sizing: border-box;
-        }
-
         body {
             margin: 0;
             font-family: Arial, sans-serif;
@@ -17,7 +13,6 @@
 
         .container {
             width: 900px;
-            max-width: calc(100% - 32px);
             margin: 40px auto;
             background: white;
             border-radius: 8px;
@@ -56,13 +51,6 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .sub-tab-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
             margin-bottom: 20px;
         }
 
@@ -75,6 +63,7 @@
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
+            transition: 0.2s ease;
         }
 
         .tab-btn.active {
@@ -141,26 +130,6 @@
             font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s ease, opacity 0.2s ease;
-        }
-
-        .send-code-btn:hover,
-        .toggle-btn:hover,
-        .submit-btn:hover,
-        .tab-btn:hover,
-        .back-btn:hover {
-            opacity: 0.92;
-        }
-
-        .send-code-btn.loading {
-            background: #9eb7db;
-            color: white;
-            cursor: wait;
-        }
-
-        .send-code-btn:disabled {
-            opacity: 0.75;
-            cursor: not-allowed;
         }
 
         .submit-btn {
@@ -176,6 +145,31 @@
             margin-top: 8px;
         }
 
+        .auth-link-row {
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .auth-text-link {
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0 8px;
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .auth-text-link:hover {
+            color: #23497c;
+            text-decoration: underline;
+        }
+
+        .auth-divider {
+            color: #b0b0b0;
+            font-size: 12px;
+        }
+
         .message {
             min-height: 22px;
             margin-top: 14px;
@@ -189,24 +183,6 @@
 
         .message.success {
             color: #2e7d32;
-        }
-
-        .code-status {
-            min-height: 18px;
-            margin-top: 8px;
-            font-size: 12px;
-            color: #666;
-            line-height: 1.5;
-        }
-
-        .code-status.success {
-            color: #2e7d32;
-            font-weight: bold;
-        }
-
-        .code-status.error {
-            color: #d9534f;
-            font-weight: bold;
         }
 
         .guide-box {
@@ -240,31 +216,59 @@
             line-height: 1.5;
         }
 
-        @media (max-width: 640px) {
-            .header {
-                font-size: 20px;
-                padding: 18px 20px;
-            }
+        .send-status {
+            margin-top: 8px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #666;
+            min-height: 18px;
+        }
 
-            .back-btn {
-                position: static;
-                display: block;
-                margin-bottom: 10px;
-                text-align: left;
+        .send-status.success {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .send-status.error {
+            color: #d9534f;
+            font-weight: bold;
+        }
+
+        .send-code-btn:disabled,
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: calc(100% - 24px);
+                margin: 20px auto;
             }
 
             .content {
                 padding: 24px 16px;
             }
 
-            .code-row,
-            .password-row {
+            .header {
+                font-size: 20px;
+                padding: 18px 20px;
+            }
+
+            .back-btn {
+                top: 16px;
+                left: 14px;
+                font-size: 16px;
+            }
+
+            .password-row,
+            .code-row {
                 flex-direction: column;
                 align-items: stretch;
             }
 
-            .send-code-btn,
-            .toggle-btn {
+            .toggle-btn,
+            .send-code-btn {
                 width: 100%;
             }
         }
@@ -274,18 +278,13 @@
 <div class="container">
     <div class="header">
         <button class="back-btn" onclick="goBack()">← 돌아가기</button>
-        로그인 / 회원가입 / 계정 찾기
+        로그인
     </div>
 
     <div class="content">
         <div class="tab-row">
             <button id="loginTabBtn" class="tab-btn active" onclick="setMode('login')">로그인</button>
             <button id="registerTabBtn" class="tab-btn" onclick="setMode('register')">회원가입</button>
-        </div>
-
-        <div class="sub-tab-row">
-            <button id="findUsernameTabBtn" class="tab-btn" onclick="setMode('findUsername')">아이디 찾기</button>
-            <button id="resetPasswordTabBtn" class="tab-btn" onclick="setMode('resetPassword')">비밀번호 재설정</button>
         </div>
 
         <div class="form-card">
@@ -307,8 +306,8 @@
                     <input type="text" id="verificationCode" placeholder="인증코드를 입력하세요">
                     <button type="button" id="sendCodeBtn" class="send-code-btn" onclick="sendVerificationCode()">인증코드 발송</button>
                 </div>
-                <div id="codeStatus" class="code-status"></div>
                 <div class="field-hint">인증코드는 5분 동안 유효합니다.</div>
+                <div id="sendStatus" class="send-status"></div>
             </div>
 
             <div id="passwordGroup" class="input-group">
@@ -318,7 +317,7 @@
                     <button type="button" class="toggle-btn" onclick="togglePassword('password', this)">보기</button>
                 </div>
                 <div id="passwordHint" class="field-hint hidden">
-                    비밀번호는 8자 이상, 특수문자 포함, 연속된 숫자/반복 숫자/내림차순 숫자 사용 불가입니다.
+                    비밀번호는 8자 이상, 특수문자 포함하여 하며, 연속된 숫자는 사용이 불가능합니다.
                 </div>
             </div>
 
@@ -332,6 +331,12 @@
 
             <button id="submitBtn" class="submit-btn" onclick="submitAuth()">로그인</button>
 
+            <div id="loginSubLinks" class="auth-link-row">
+                <button type="button" class="auth-text-link" onclick="setMode('findUsername')">아이디 찾기</button>
+                <span class="auth-divider">|</span>
+                <button type="button" class="auth-text-link" onclick="setMode('resetPassword')">비밀번호 재설정</button>
+            </div>
+
             <div id="message" class="message"></div>
 
             <div class="guide-box">
@@ -340,11 +345,9 @@
                     회원가입 시 이메일 인증을 완료해야 계정이 생성됩니다.
                 </div>
                 <ul id="ruleBox" class="rule-list hidden">
-                    <li>비밀번호는 최소 8자 이상</li>
-                    <li>특수문자 최소 1개 포함</li>
-                    <li>연속된 숫자 사용 금지 (예: 123, 456, 789, 890)</li>
-                    <li>같은 숫자 반복 금지 (예: 111, 222)</li>
-                    <li>내림차순 숫자 금지 (예: 321, 654)</li>
+                    <li>이메일은 계정 생성 및 아이디, 비밀번호 재설정에만 사용됩니다.</li>
+                    <li>비밀번호는 암호화되어 저장됩니다.</li>
+                    <li>회원탈퇴는 로그인 후 계정설정에서 하실 수 있습니다.</li>
                 </ul>
             </div>
         </div>
@@ -354,18 +357,72 @@
 <script>
     const authApi = "/api/auth";
     let currentMode = "login";
+    let resendTimerId = null;
+
+    function clearSendStatus() {
+        const sendStatus = document.getElementById("sendStatus");
+        sendStatus.textContent = "";
+        sendStatus.className = "send-status";
+    }
+
+    function setSendStatus(text, type = "") {
+        const sendStatus = document.getElementById("sendStatus");
+        sendStatus.textContent = text;
+        sendStatus.className = type ? `send-status ${type}` : "send-status";
+    }
+
+    function stopResendTimer() {
+        if (resendTimerId) {
+            clearInterval(resendTimerId);
+            resendTimerId = null;
+        }
+    }
+
+    function startResendTimer(seconds = 30) {
+        const sendCodeBtn = document.getElementById("sendCodeBtn");
+        let remain = seconds;
+
+        sendCodeBtn.disabled = true;
+        sendCodeBtn.textContent = `${remain}초 후 재발송`;
+
+        resendTimerId = setInterval(() => {
+            remain -= 1;
+
+            if (remain <= 0) {
+                stopResendTimer();
+                sendCodeBtn.disabled = false;
+                updateSendButtonText();
+                return;
+            }
+
+            sendCodeBtn.textContent = `${remain}초 후 재발송`;
+        }, 1000);
+    }
+
+    function updateSendButtonText() {
+        const sendCodeBtn = document.getElementById("sendCodeBtn");
+
+        if (currentMode === "register") {
+            sendCodeBtn.textContent = "회원가입 코드 발송";
+        } else if (currentMode === "findUsername") {
+            sendCodeBtn.textContent = "아이디 찾기 코드 발송";
+        } else if (currentMode === "resetPassword") {
+            sendCodeBtn.textContent = "비밀번호 재설정 코드 발송";
+        } else {
+            sendCodeBtn.textContent = "인증코드 발송";
+        }
+    }
 
     function setMode(mode) {
         currentMode = mode;
 
         const loginTabBtn = document.getElementById("loginTabBtn");
         const registerTabBtn = document.getElementById("registerTabBtn");
-        const findUsernameTabBtn = document.getElementById("findUsernameTabBtn");
-        const resetPasswordTabBtn = document.getElementById("resetPasswordTabBtn");
 
         const formTitle = document.getElementById("formTitle");
         const submitBtn = document.getElementById("submitBtn");
         const message = document.getElementById("message");
+        const loginSubLinks = document.getElementById("loginSubLinks");
 
         const usernameGroup = document.getElementById("usernameGroup");
         const emailGroup = document.getElementById("emailGroup");
@@ -377,7 +434,7 @@
         const guideText = document.getElementById("guideText");
         const sendCodeBtn = document.getElementById("sendCodeBtn");
 
-        [loginTabBtn, registerTabBtn, findUsernameTabBtn, resetPasswordTabBtn].forEach(btn => {
+        [loginTabBtn, registerTabBtn].forEach(btn => {
             btn.classList.remove("active");
         });
 
@@ -388,6 +445,7 @@
         confirmPasswordGroup.classList.add("hidden");
         passwordHint.classList.add("hidden");
         ruleBox.classList.add("hidden");
+        loginSubLinks.classList.add("hidden");
 
         if (mode === "login") {
             loginTabBtn.classList.add("active");
@@ -396,6 +454,7 @@
 
             usernameGroup.classList.remove("hidden");
             passwordGroup.classList.remove("hidden");
+            loginSubLinks.classList.remove("hidden");
 
             guideText.innerHTML =
                 "로그인하면 사용자별로 게임과 퀘스트가 저장됩니다.<br>이메일 인증이 완료된 계정만 로그인할 수 있습니다.";
@@ -414,9 +473,8 @@
             sendCodeBtn.textContent = "회원가입 코드 발송";
 
             guideText.innerHTML =
-                "이메일 인증코드를 먼저 발송한 뒤 회원가입을 완료해주세요.<br>메일이 보이지 않으면 스팸함도 확인해주세요.";
+                "이메일 인증코드를 먼저 발송한 뒤 회원가입을 완료해주세요.<br>이메일 인증이 끝난 계정만 생성됩니다.";
         } else if (mode === "findUsername") {
-            findUsernameTabBtn.classList.add("active");
             formTitle.textContent = "아이디 찾기";
             submitBtn.textContent = "아이디 찾기";
 
@@ -427,7 +485,6 @@
             guideText.innerHTML =
                 "이메일 인증 후 등록된 아이디를 일부만 표시합니다.<br>해당 이메일로 가입된 계정이 없으면 '사용자 계정이 없습니다.'가 표시됩니다.";
         } else if (mode === "resetPassword") {
-            resetPasswordTabBtn.classList.add("active");
             formTitle.textContent = "비밀번호 재설정";
             submitBtn.textContent = "비밀번호 재설정";
 
@@ -443,9 +500,12 @@
                 "기존 비밀번호는 확인할 수 없습니다.<br>이메일 인증 후 새 비밀번호로 변경됩니다.";
         }
 
+        stopResendTimer();
+        sendCodeBtn.disabled = false;
+        updateSendButtonText();
+        clearSendStatus();
         message.textContent = "";
         message.classList.remove("success");
-        clearCodeStatus();
         clearFields();
     }
 
@@ -455,24 +515,6 @@
         document.getElementById("verificationCode").value = "";
         document.getElementById("password").value = "";
         document.getElementById("confirmPassword").value = "";
-    }
-
-    function clearCodeStatus() {
-        const codeStatus = document.getElementById("codeStatus");
-        codeStatus.textContent = "";
-        codeStatus.className = "code-status";
-    }
-
-    function setCodeStatus(text, type) {
-        const codeStatus = document.getElementById("codeStatus");
-        codeStatus.textContent = text;
-        codeStatus.className = "code-status";
-
-        if (type === "success") {
-            codeStatus.classList.add("success");
-        } else if (type === "error") {
-            codeStatus.classList.add("error");
-        }
     }
 
     function togglePassword(inputId, button) {
@@ -504,10 +546,8 @@
 
                 const ascending = (n2 === n1 + 1) && (n3 === n2 + 1);
                 const zeroWrap = (a === "8" && b === "9" && c === "0");
-                const sameNumber = (a === b && b === c);
-                const descending = (n2 === n1 - 1) && (n3 === n2 - 1);
 
-                if (ascending || zeroWrap || sameNumber || descending) {
+                if (ascending || zeroWrap) {
                     return true;
                 }
             }
@@ -544,14 +584,11 @@
         const email = document.getElementById("email").value.trim();
         const message = document.getElementById("message");
         const sendCodeBtn = document.getElementById("sendCodeBtn");
-        const originalBtnText = sendCodeBtn.textContent;
-
-        clearCodeStatus();
 
         if (!email) {
             message.textContent = "이메일을 입력해주세요.";
             message.classList.remove("success");
-            setCodeStatus("이메일을 먼저 입력해주세요.", "error");
+            setSendStatus("", "");
             return;
         }
 
@@ -566,16 +603,15 @@
         } else {
             message.textContent = "이메일 인증코드 발송이 필요한 화면이 아닙니다.";
             message.classList.remove("success");
-            setCodeStatus("현재 화면에서는 인증코드를 발송할 수 없습니다.", "error");
             return;
         }
 
-        try {
-            sendCodeBtn.disabled = true;
-            sendCodeBtn.classList.add("loading");
-            sendCodeBtn.textContent = "발송 중...";
-            setCodeStatus("인증 메일 발송을 시도하고 있습니다...", "");
+        stopResendTimer();
+        sendCodeBtn.disabled = true;
+        sendCodeBtn.textContent = "발송 중...";
+        setSendStatus("인증 메일을 보내는 중입니다. 잠시만 기다려주세요.");
 
+        try {
             const response = await fetch(`${authApi}${endpoint}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -587,22 +623,23 @@
             if (!response.ok) {
                 message.textContent = data.message || "인증코드 발송에 실패했습니다.";
                 message.classList.remove("success");
-                setCodeStatus(data.message || "인증코드 발송에 실패했습니다.", "error");
+                setSendStatus("인증 메일 발송에 실패했습니다.", "error");
+                sendCodeBtn.disabled = false;
+                updateSendButtonText();
                 return;
             }
 
             message.textContent = data.message || "인증코드가 발송되었습니다.";
             message.classList.add("success");
-            setCodeStatus("인증 메일이 발송되었습니다. 메일함과 스팸함을 확인해주세요.", "success");
+            setSendStatus("인증 메일을 발송했습니다. 메일함과 스팸함을 함께 확인해주세요.", "success");
+            startResendTimer(30);
         } catch (error) {
             console.error("인증코드 발송 실패:", error);
             message.textContent = "서버 통신에 실패했습니다.";
             message.classList.remove("success");
-            setCodeStatus("서버 통신에 실패했습니다. 잠시 후 다시 시도해주세요.", "error");
-        } finally {
+            setSendStatus("서버와 통신하지 못했습니다.", "error");
             sendCodeBtn.disabled = false;
-            sendCodeBtn.classList.remove("loading");
-            sendCodeBtn.textContent = originalBtnText;
+            updateSendButtonText();
         }
     }
 
@@ -782,8 +819,6 @@
     function goBack() {
         window.location.href = "/index.html";
     }
-
-    setMode("login");
 </script>
 </body>
 </html>

@@ -4,7 +4,6 @@ import com.dailyquest.helper.auth.dto.FindUsernameRequest;
 import com.dailyquest.helper.auth.dto.LoginRequest;
 import com.dailyquest.helper.auth.dto.RegisterRequest;
 import com.dailyquest.helper.auth.dto.ResetPasswordByEmailRequest;
-import com.dailyquest.helper.auth.dto.SendEmailCodeRequest;
 import com.dailyquest.helper.auth.dto.UpdateEmailRequest;
 import com.dailyquest.helper.auth.dto.UpdatePasswordRequest;
 import com.dailyquest.helper.auth.dto.UpdateUsernameRequest;
@@ -27,8 +26,8 @@ public class AuthController {
     }
 
     @PostMapping("/send-register-code")
-    public ResponseEntity<?> sendRegisterCode(@Valid @RequestBody SendEmailCodeRequest request) {
-        authService.sendRegisterVerificationCode(request.getEmail());
+    public ResponseEntity<?> sendRegisterCode(@RequestBody Map<String, String> request) {
+        authService.sendRegisterVerificationCode(request.get("email"));
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "회원가입 이메일 인증코드를 발송했습니다."
@@ -36,8 +35,8 @@ public class AuthController {
     }
 
     @PostMapping("/send-find-username-code")
-    public ResponseEntity<?> sendFindUsernameCode(@Valid @RequestBody SendEmailCodeRequest request) {
-        authService.sendFindUsernameVerificationCode(request.getEmail());
+    public ResponseEntity<?> sendFindUsernameCode(@RequestBody Map<String, String> request) {
+        authService.sendFindUsernameVerificationCode(request.get("email"));
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "아이디 찾기 인증코드를 발송했습니다."
@@ -45,8 +44,8 @@ public class AuthController {
     }
 
     @PostMapping("/send-reset-password-code")
-    public ResponseEntity<?> sendResetPasswordCode(@Valid @RequestBody SendEmailCodeRequest request) {
-        authService.sendResetPasswordVerificationCode(request.getEmail());
+    public ResponseEntity<?> sendResetPasswordCode(@RequestBody Map<String, String> request) {
+        authService.sendResetPasswordVerificationCode(request.get("email"));
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "비밀번호 재설정 인증코드를 발송했습니다."

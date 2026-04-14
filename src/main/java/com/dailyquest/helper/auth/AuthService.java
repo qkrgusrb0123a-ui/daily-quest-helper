@@ -290,7 +290,14 @@ public class AuthService {
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("이메일을 입력해주세요.");
         }
-        return email.trim().toLowerCase();
+
+        String normalized = email.trim().toLowerCase();
+
+        if (!normalized.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            throw new IllegalArgumentException("올바른 이메일 형식이 아닙니다.");
+        }
+
+        return normalized;
     }
 
     private String generateVerificationCode() {
