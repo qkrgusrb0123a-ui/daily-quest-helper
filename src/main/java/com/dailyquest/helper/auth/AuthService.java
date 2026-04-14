@@ -93,9 +93,11 @@ public class AuthService {
         }
 
         validatePassword(password);
+
         verifyAndUseCode(email, code, VerificationPurpose.REGISTER);
 
         String encodedPassword = passwordEncoder.encode(password);
+
         User user = new User(username, email, encodedPassword, true);
         userRepository.save(user);
     }
@@ -177,22 +179,18 @@ public class AuthService {
     public void updateEmail(Long userId, String newEmail, String password) {
         String normalizedEmail = normalizeEmail(newEmail);
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-
         if (password == null || password.isBlank()) {
             throw new IllegalArgumentException("비밀번호를 입력해주세요.");
         }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        if (user.getEmail().equals(normalizedEmail)) {
-            throw new IllegalArgumentException("현재 이메일과 동일합니다.");
-        }
-
-        if (userRepository.existsByEmail(normalizedEmail)) {
+        if (!user.getEmail().equals(normalizedEmail) && userRepository.existsByEmail(normalizedEmail)) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
 
@@ -250,21 +248,23 @@ public class AuthService {
 
     @Transactional
     protected void issueVerificationCode(String email, VerificationPurpose purpose) {
-        List<EmailVerification> oldCodes = emailVerificationRepository.findByEmailAndPurposeAndUsedFalse(email, purpose);
+        List<EmailVerification> oldCodes =
+                emailVerificationRepository.findByEmailAndPurposeAndUsedFalse(email, purpose);
+
         for (EmailVerification oldCode : oldCodes) {
             oldCode.setUsed(true);
         }
         emailVerificationRepository.saveAll(oldCodes);
 
-        String code = generateSixDigitCode();
+        String code = generateVerificationCode();
         EmailVerification verification = new EmailVerification(
                 email,
                 purpose,
                 code,
                 LocalDateTime.now().plusMinutes(5)
         );
-        emailVerificationRepository.save(verification);
 
+        emailVerificationRepository.save(verification);
         emailService.sendVerificationCode(email, code, purpose);
     }
 
@@ -275,7 +275,7 @@ public class AuthService {
         }
 
         EmailVerification verification = emailVerificationRepository
-                .findTopByEmailAndPurposeAndCodeAndUsedFalseOrderByIdDesc(email, purpose, code)
+                .findTopByEmailAndPurposeAndCodeAndUsedFalseOrderByIdDesc(email, purpose, code.trim())
                 .orElseThrow(() -> new IllegalArgumentException("이메일 인증코드가 올바르지 않습니다."));
 
         if (verification.getExpiresAt().isBefore(LocalDateTime.now())) {
@@ -287,15 +287,15 @@ public class AuthService {
     }
 
     private String normalizeEmail(String email) {
-        String normalized = email == null ? "" : email.trim().toLowerCase();
-        if (normalized.isBlank()) {
+        if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("이메일을 입력해주세요.");
         }
-        return normalized;
+        return email.trim().toLowerCase();
     }
 
-    private String generateSixDigitCode() {
-        int value = 100000 + new Random().nextInt(900000);
+    private String generateVerificationCode() {
+        Random random = new Random();
+        int value = 100000 + random.nextInt(900000);
         return String.valueOf(value);
     }
 
@@ -304,25 +304,19 @@ public class AuthService {
             return "";
         }
 
-        int length = username.length();
-
-        if (length == 1) {
-            return "*";
-        }
-
-        if (length == 2) {
+        if (username.length() <= 2) {
             return username.charAt(0) + "*";
         }
 
-        if (length <= 4) {
-            return username.substring(0, 1)
-                    + "*".repeat(length - 2)
-                    + username.substring(length - 1);
+        StringBuilder builder = new StringBuilder();
+        builder.append(username.charAt(0));
+
+        for (int i = 1; i < username.length() - 1; i++) {
+            builder.append("*");
         }
 
-        return username.substring(0, 2)
-                + "*".repeat(length - 4)
-                + username.substring(length - 2);
+        builder.append(username.charAt(username.length() - 1));
+        return builder.toString();
     }
 
     private void validatePassword(String password) {
@@ -330,7 +324,7 @@ public class AuthService {
             throw new IllegalArgumentException("비밀번호는 8자 이상이어야 합니다.");
         }
 
-        if (!containsSpecialCharacter(password)) {
+        if (!password.matches(".*[^a-zA-Z0-9].*")) {
             throw new IllegalArgumentException("비밀번호에는 특수문자가 최소 1개 포함되어야 합니다.");
         }
 
@@ -339,33 +333,27 @@ public class AuthService {
         }
     }
 
-    private boolean containsSpecialCharacter(String password) {
-        return password.matches(".*[^a-zA-Z0-9].*");
-    }
-
     private boolean containsSequentialNumbers(String password) {
         for (int i = 0; i < password.length() - 2; i++) {
-            char c1 = password.charAt(i);
-            char c2 = password.charAt(i + 1);
-            char c3 = password.charAt(i + 2);
+            char a = password.charAt(i);
+            char b = password.charAt(i + 1);
+            char c = password.charAt(i + 2);
 
-            if (Character.isDigit(c1) && Character.isDigit(c2) && Character.isDigit(c3)) {
-                int n1 = c1 - '0';
-                int n2 = c2 - '0';
-                int n3 = c3 - '0';
+            if (Character.isDigit(a) && Character.isDigit(b) && Character.isDigit(c)) {
+                int n1 = a - '0';
+                int n2 = b - '0';
+                int n3 = c - '0';
 
                 boolean ascending = (n2 == n1 + 1) && (n3 == n2 + 1);
-                boolean zeroWrap = (c1 == '8' && c2 == '9' && c3 == '0');
+                boolean zeroWrap = (a == '8' && b == '9' && c == '0');
+                boolean sameNumber = (a == b && b == c);
                 boolean descending = (n2 == n1 - 1) && (n3 == n2 - 1);
-                boolean reverseWrap = (c1 == '1' && c2 == '0' && c3 == '9');
-                boolean sameNumber = (c1 == c2) && (c2 == c3);
 
-                if (ascending || zeroWrap || descending || reverseWrap || sameNumber) {
+                if (ascending || zeroWrap || sameNumber || descending) {
                     return true;
                 }
             }
         }
-
         return false;
     }
 }
