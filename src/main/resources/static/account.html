@@ -34,7 +34,16 @@ body {
     position: absolute;
     left: 20px;
     top: 18px;
+    padding: 8px 14px;
+    background: #3b73bd;
+    color: white;
+    border: none;
+    border-radius: 6px;
     cursor: pointer;
+}
+
+.back-btn:hover {
+    opacity: 0.9;
 }
 
 .content {
@@ -119,7 +128,7 @@ button:hover {
 <div class="container">
 
     <div class="header">
-        <span class="back-btn" onclick="goBack()">←</span>
+        <button class="back-btn" onclick="goBack()">← 돌아가기</button>
         계정 설정
     </div>
 
