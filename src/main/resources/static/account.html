@@ -67,25 +67,6 @@ body {
     color: #23497c;
 }
 
-.label {
-    font-size: 14px;
-    color: #4b5b70;
-    margin-top: 10px;
-    margin-bottom: 4px;
-    font-weight: bold;
-}
-
-.current-email-box {
-    width: 100%;
-    padding: 10px;
-    margin-top: 8px;
-    border: 1px solid #cfd6df;
-    border-radius: 6px;
-    background: #f7f9fc;
-    color: #333;
-    box-sizing: border-box;
-}
-
 input {
     width: 100%;
     padding: 10px;
@@ -142,6 +123,8 @@ button:hover {
             <button onclick="updateUsername()">변경</button>
         </div>
 
+        <!-- 이메일 기능 임시 비활성화 -->
+        <!--
         <div class="section">
             <div class="section-title">이메일 변경</div>
 
@@ -158,6 +141,7 @@ button:hover {
 
             <button onclick="updateEmail()">변경</button>
         </div>
+        -->
 
         <div class="section">
             <div class="section-title">비밀번호 변경</div>
@@ -172,6 +156,8 @@ button:hover {
         <div class="section">
             <div class="section-title">계정 관리</div>
 
+            <div class="info-text">이메일 관련 기능은 현재 임시 비활성화되어 있습니다.</div>
+
             <button class="logout" onclick="logout()">로그아웃</button>
             <button class="danger" onclick="deleteAccount()">회원탈퇴</button>
         </div>
@@ -182,28 +168,8 @@ button:hover {
 <script>
 const authApi = "/api/auth";
 
-document.addEventListener("DOMContentLoaded", async () => {
-    await loadMyInfo();
-});
-
 function goBack() {
     location.href = "/index.html";
-}
-
-async function loadMyInfo() {
-    try {
-        const res = await fetch(authApi + "/me");
-
-        if (!res.ok) {
-            location.href = "/login.html";
-            return;
-        }
-
-        const data = await res.json();
-        document.getElementById("currentEmail").textContent = data.email || "-";
-    } catch (e) {
-        document.getElementById("currentEmail").textContent = "불러오기 실패";
-    }
 }
 
 async function updateUsername() {
@@ -224,33 +190,6 @@ async function updateUsername() {
 
     alert(data.message || "아이디 변경 완료");
     document.getElementById("newUsername").value = "";
-}
-
-async function updateEmail() {
-    const newEmail = document.getElementById("newEmail").value.trim();
-    const password = document.getElementById("emailPassword").value;
-
-    const res = await fetch(authApi + "/email", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            newEmail,
-            password
-        })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-        alert(data.message || "이메일 변경 실패");
-        return;
-    }
-
-    alert(data.message || "이메일 변경 완료");
-
-    document.getElementById("currentEmail").textContent = data.email || newEmail;
-    document.getElementById("newEmail").value = "";
-    document.getElementById("emailPassword").value = "";
 }
 
 async function updatePassword() {

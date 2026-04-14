@@ -1,17 +1,7 @@
 package com.dailyquest.helper.auth;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+/*
+ 이메일 인증 기능 임시 비활성화
 
-import java.util.List;
-import java.util.Optional;
-
-public interface EmailVerificationRepository extends JpaRepository<EmailVerification, Long> {
-
-    List<EmailVerification> findByEmailAndPurposeAndUsedFalse(String email, VerificationPurpose purpose);
-
-    Optional<EmailVerification> findTopByEmailAndPurposeAndCodeAndUsedFalseOrderByIdDesc(
-            String email,
-            VerificationPurpose purpose,
-            String code
-    );
-}
+ 기존 이메일 인증 레포지토리 사용 중단.
+*/

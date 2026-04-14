@@ -1,10 +1,7 @@
 package com.dailyquest.helper.auth;
 
-import com.dailyquest.helper.auth.dto.FindUsernameRequest;
 import com.dailyquest.helper.auth.dto.LoginRequest;
 import com.dailyquest.helper.auth.dto.RegisterRequest;
-import com.dailyquest.helper.auth.dto.ResetPasswordByEmailRequest;
-import com.dailyquest.helper.auth.dto.UpdateEmailRequest;
 import com.dailyquest.helper.auth.dto.UpdatePasswordRequest;
 import com.dailyquest.helper.auth.dto.UpdateUsernameRequest;
 import com.dailyquest.helper.user.User;
@@ -25,32 +22,16 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @PostMapping("/send-register-code")
-    public ResponseEntity<?> sendRegisterCode(@RequestBody Map<String, String> request) {
-        authService.sendRegisterVerificationCode(request.get("email"));
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "회원가입 이메일 인증코드를 발송했습니다."
-        ));
-    }
-
-    @PostMapping("/send-find-username-code")
-    public ResponseEntity<?> sendFindUsernameCode(@RequestBody Map<String, String> request) {
-        authService.sendFindUsernameVerificationCode(request.get("email"));
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "아이디 찾기 인증코드를 발송했습니다."
-        ));
-    }
-
-    @PostMapping("/send-reset-password-code")
-    public ResponseEntity<?> sendResetPasswordCode(@RequestBody Map<String, String> request) {
-        authService.sendResetPasswordVerificationCode(request.get("email"));
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "비밀번호 재설정 인증코드를 발송했습니다."
-        ));
-    }
+    /*
+     이메일 기능 임시 비활성화
+     아래 API들은 주석 처리 대상이었음
+     - /send-register-code
+     - /send-find-username-code
+     - /send-reset-password-code
+     - /find-username
+     - /reset-password-by-email
+     - /email
+    */
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
@@ -88,27 +69,7 @@ public class AuthController {
         return ResponseEntity.ok(Map.of(
                 "loggedIn", true,
                 "userId", user.getId(),
-                "username", user.getUsername(),
-                "email", user.getEmail()
-        ));
-    }
-
-    @PostMapping("/find-username")
-    public ResponseEntity<?> findUsername(@Valid @RequestBody FindUsernameRequest request) {
-        String maskedUsername = authService.findMaskedUsername(request);
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "아이디를 찾았습니다.",
-                "maskedUsername", maskedUsername
-        ));
-    }
-
-    @PostMapping("/reset-password-by-email")
-    public ResponseEntity<?> resetPasswordByEmail(@Valid @RequestBody ResetPasswordByEmailRequest request) {
-        authService.resetPasswordByEmail(request);
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "비밀번호가 재설정되었습니다. 새 비밀번호로 로그인해주세요."
+                "username", user.getUsername()
         ));
     }
 
@@ -125,21 +86,6 @@ public class AuthController {
                 "success", true,
                 "message", "아이디가 변경되었습니다.",
                 "username", user.getUsername()
-        ));
-    }
-
-    @PutMapping("/email")
-    public ResponseEntity<?> updateEmail(@RequestBody UpdateEmailRequest request, HttpSession session) {
-        Long userId = getLoginUserId(session);
-
-        authService.updateEmail(userId, request.getNewEmail(), request.getPassword());
-
-        User user = authService.getUserById(userId);
-
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "이메일이 변경되었습니다.",
-                "email", user.getEmail()
         ));
     }
 
