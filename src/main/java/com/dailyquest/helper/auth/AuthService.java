@@ -120,6 +120,11 @@ public class AuthService {
         session.invalidate();
     }
 
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    }
+
     public String findMaskedUsername(FindUsernameRequest request) {
         String email = normalizeEmail(request.getEmail());
         String code = request.getVerificationCode() == null ? "" : request.getVerificationCode().trim();
@@ -166,6 +171,33 @@ public class AuthService {
         }
 
         user.setUsername(trimmedUsername);
+        userRepository.save(user);
+    }
+
+    public void updateEmail(Long userId, String newEmail, String password) {
+        String normalizedEmail = normalizeEmail(newEmail);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if (password == null || password.isBlank()) {
+            throw new IllegalArgumentException("비밀번호를 입력해주세요.");
+        }
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        if (user.getEmail().equals(normalizedEmail)) {
+            throw new IllegalArgumentException("현재 이메일과 동일합니다.");
+        }
+
+        if (userRepository.existsByEmail(normalizedEmail)) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
+
+        user.setEmail(normalizedEmail);
+        user.setEmailVerified(true);
         userRepository.save(user);
     }
 
@@ -324,8 +356,11 @@ public class AuthService {
 
                 boolean ascending = (n2 == n1 + 1) && (n3 == n2 + 1);
                 boolean zeroWrap = (c1 == '8' && c2 == '9' && c3 == '0');
+                boolean descending = (n2 == n1 - 1) && (n3 == n2 - 1);
+                boolean reverseWrap = (c1 == '1' && c2 == '0' && c3 == '9');
+                boolean sameNumber = (c1 == c2) && (c2 == c3);
 
-                if (ascending || zeroWrap) {
+                if (ascending || zeroWrap || descending || reverseWrap || sameNumber) {
                     return true;
                 }
             }

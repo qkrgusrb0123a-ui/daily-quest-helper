@@ -5,8 +5,10 @@ import com.dailyquest.helper.auth.dto.LoginRequest;
 import com.dailyquest.helper.auth.dto.RegisterRequest;
 import com.dailyquest.helper.auth.dto.ResetPasswordByEmailRequest;
 import com.dailyquest.helper.auth.dto.SendEmailCodeRequest;
+import com.dailyquest.helper.auth.dto.UpdateEmailRequest;
 import com.dailyquest.helper.auth.dto.UpdatePasswordRequest;
 import com.dailyquest.helper.auth.dto.UpdateUsernameRequest;
+import com.dailyquest.helper.user.User;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -81,19 +83,14 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<?> me(HttpSession session) {
-        Object userId = session.getAttribute("LOGIN_USER_ID");
-        Object username = session.getAttribute("LOGIN_USERNAME");
-
-        if (userId == null) {
-            return ResponseEntity.status(401).body(Map.of(
-                    "loggedIn", false
-            ));
-        }
+        Long userId = getLoginUserId(session);
+        User user = authService.getUserById(userId);
 
         return ResponseEntity.ok(Map.of(
                 "loggedIn", true,
-                "userId", userId,
-                "username", username
+                "userId", user.getId(),
+                "username", user.getUsername(),
+                "email", user.getEmail()
         ));
     }
 
@@ -122,11 +119,28 @@ public class AuthController {
 
         authService.updateUsername(userId, request.getNewUsername());
 
-        Object updatedUsername = session.getAttribute("LOGIN_USERNAME");
+        User user = authService.getUserById(userId);
+        session.setAttribute("LOGIN_USERNAME", user.getUsername());
+
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "아이디가 변경되었습니다.",
-                "username", updatedUsername
+                "username", user.getUsername()
+        ));
+    }
+
+    @PutMapping("/email")
+    public ResponseEntity<?> updateEmail(@RequestBody UpdateEmailRequest request, HttpSession session) {
+        Long userId = getLoginUserId(session);
+
+        authService.updateEmail(userId, request.getNewEmail(), request.getPassword());
+
+        User user = authService.getUserById(userId);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "이메일이 변경되었습니다.",
+                "email", user.getEmail()
         ));
     }
 
