@@ -2,6 +2,7 @@ package com.dailyquest.helper.config;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -50,6 +51,15 @@ public class GlobalExceptionHandler {
                 .body(Map.of(
                         "success", false,
                         "message", message
+                ));
+    }
+
+    @ExceptionHandler(MailException.class)
+    public ResponseEntity<?> handleMailException(MailException e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                        "success", false,
+                        "message", "이메일 발송에 실패했습니다. 메일 계정 설정과 앱 비밀번호를 확인해주세요."
                 ));
     }
 

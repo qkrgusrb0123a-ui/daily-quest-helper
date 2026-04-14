@@ -1,5 +1,9 @@
 package com.dailyquest.helper.auth;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -7,7 +11,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
+    private static final Logger log = LoggerFactory.getLogger(EmailService.class);
+
     private final JavaMailSender mailSender;
+
+    @Value("${spring.mail.username}")
+    private String fromEmail;
 
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
@@ -37,6 +46,7 @@ public class EmailService {
         }
 
         SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromEmail);
         message.setTo(email);
         message.setSubject(title);
         message.setText(
@@ -46,6 +56,13 @@ public class EmailService {
                 "본인이 요청하지 않았다면 이 메일을 무시해주세요."
         );
 
-        mailSender.send(message);
+        try {
+            log.info("인증 메일 발송 시도: to={}, purpose={}", email, purpose);
+            mailSender.send(message);
+            log.info("인증 메일 발송 성공: to={}", email);
+        } catch (MailException e) {
+            log.error("인증 메일 발송 실패: to={}, purpose={}, error={}", email, purpose, e.getMessage(), e);
+            throw e;
+        }
     }
 }
