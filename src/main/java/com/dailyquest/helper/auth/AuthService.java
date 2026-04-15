@@ -280,7 +280,13 @@ public class AuthService {
         );
 
         emailVerificationRepository.save(verification);
-        emailService.sendVerificationCode(email, code, purpose);
+
+        try {
+            emailService.sendVerificationCode(email, code, purpose);
+        } catch (RuntimeException e) {
+            emailVerificationRepository.deleteByEmailAndPurpose(email, purpose);
+            throw e;
+        }
     }
 
     private void verifyCodeOrThrow(String email, String inputCode, VerificationPurpose purpose) {

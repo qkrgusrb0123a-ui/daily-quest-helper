@@ -2,6 +2,7 @@ package com.dailyquest.helper.config;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.gmail.Gmail;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,25 +28,29 @@ public class GmailApiConfig {
     public Gmail gmail() throws Exception {
         validateRequiredValues();
 
+        var transport = GoogleNetHttpTransport.newTrustedTransport();
+        var jsonFactory = GsonFactory.getDefaultInstance();
+
         GoogleCredential credential = new GoogleCredential.Builder()
-                .setTransport(GoogleNetHttpTransport.newTrustedTransport())
-                .setJsonFactory(GsonFactory.getDefaultInstance())
+                .setTransport(transport)
+                .setJsonFactory(jsonFactory)
                 .setClientSecrets(clientId, clientSecret)
                 .build();
 
         credential.setRefreshToken(refreshToken);
 
-        // 시작 시 access token 1회 갱신 시도
         boolean refreshed = credential.refreshToken();
-        if (!refreshed || credential.getAccessToken() == null) {
-            throw new IllegalStateException("Gmail OAuth access token 갱신에 실패했습니다. client id / secret / refresh token 값을 확인해주세요.");
+        if (!refreshed || credential.getAccessToken() == null || credential.getAccessToken().isBlank()) {
+            throw new IllegalStateException("Gmail OAuth access token 갱신에 실패했습니다. client id / secret / refresh token 또는 Gmail API 권한을 확인해주세요.");
         }
 
-        return new Gmail.Builder(
-                GoogleNetHttpTransport.newTrustedTransport(),
-                GsonFactory.getDefaultInstance(),
-                credential
-        )
+        HttpRequestInitializer requestInitializer = request -> {
+            credential.initialize(request);
+            request.setConnectTimeout(30_000);
+            request.setReadTimeout(30_000);
+        };
+
+        return new Gmail.Builder(transport, jsonFactory, requestInitializer)
                 .setApplicationName(applicationName)
                 .build();
     }

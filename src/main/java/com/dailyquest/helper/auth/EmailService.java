@@ -4,6 +4,7 @@ import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.model.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
+import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
@@ -35,6 +36,8 @@ public class EmailService {
     }
 
     public void sendVerificationCode(String toEmail, String code, VerificationPurpose purpose) {
+        validateEmailConfig(toEmail);
+
         String subject;
         String bodyTitle;
 
@@ -60,7 +63,7 @@ public class EmailService {
         String content = buildVerificationBody(bodyTitle, code);
 
         try {
-            log.info("Gmail API 인증 메일 발송 시도: to={}, purpose={}", toEmail, purpose);
+            log.info("Gmail API 인증 메일 발송 시도: from={}, to={}, purpose={}", senderEmail, toEmail, purpose);
 
             MimeMessage mimeMessage = createMimeMessage(toEmail, subject, content);
             Message gmailMessage = createGmailMessage(mimeMessage);
@@ -72,9 +75,28 @@ public class EmailService {
 
             log.info("Gmail API 인증 메일 발송 성공: to={}", toEmail);
         } catch (Exception e) {
-            log.error("Gmail API 인증 메일 발송 실패: to={}, purpose={}, error={}",
-                    toEmail, purpose, e.getMessage(), e);
-            throw new IllegalStateException("인증 이메일 발송에 실패했습니다.", e);
+            log.error("Gmail API 인증 메일 발송 실패: from={}, to={}, purpose={}, errorType={}, error={}",
+                    senderEmail, toEmail, purpose, e.getClass().getName(), e.getMessage(), e);
+            throw new IllegalStateException("인증 이메일 발송에 실패했습니다. Gmail API 설정값과 발신자 이메일을 확인해주세요.", e);
+        }
+    }
+
+    private void validateEmailConfig(String toEmail) {
+        if (isBlank(senderEmail)) {
+            throw new IllegalStateException("gmail.sender.email 값이 비어 있습니다.");
+        }
+        if (isBlank(toEmail)) {
+            throw new IllegalArgumentException("수신 이메일이 비어 있습니다.");
+        }
+
+        try {
+            InternetAddress fromAddress = new InternetAddress(senderEmail, true);
+            fromAddress.validate();
+
+            InternetAddress toAddress = new InternetAddress(toEmail, true);
+            toAddress.validate();
+        } catch (AddressException e) {
+            throw new IllegalStateException("이메일 주소 형식이 올바르지 않습니다. 발신자 또는 수신자 이메일을 확인해주세요.", e);
         }
     }
 
@@ -84,9 +106,10 @@ public class EmailService {
 
         MimeMessage mimeMessage = new MimeMessage(session);
         mimeMessage.setFrom(new InternetAddress(senderEmail, senderName, StandardCharsets.UTF_8.name()));
-        mimeMessage.setRecipients(MimeMessage.RecipientType.TO, InternetAddress.parse(toEmail));
+        mimeMessage.setRecipients(MimeMessage.RecipientType.TO, InternetAddress.parse(toEmail, true));
         mimeMessage.setSubject(subject, StandardCharsets.UTF_8.name());
         mimeMessage.setText(content, StandardCharsets.UTF_8.name());
+        mimeMessage.saveChanges();
 
         return mimeMessage;
     }
@@ -101,7 +124,6 @@ public class EmailService {
 
         Message message = new Message();
         message.setRaw(encodedEmail);
-
         return message;
     }
 
@@ -110,5 +132,9 @@ public class EmailService {
                 "인증코드: " + code + "\n" +
                 "유효시간: 5분\n\n" +
                 "본인이 요청하지 않았다면 이 메일을 무시해주세요.";
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }
