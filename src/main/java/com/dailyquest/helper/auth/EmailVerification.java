@@ -11,21 +11,24 @@ public class EmailVerification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 320)
+    @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false)
     private String code;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false)
     private VerificationPurpose purpose;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "expires_at", nullable = false)
     private LocalDateTime expiresAt;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private Boolean used = false;
 
     protected EmailVerification() {
     }
@@ -34,23 +37,9 @@ public class EmailVerification {
         this.email = email;
         this.code = code;
         this.purpose = purpose;
-        this.expiresAt = expiresAt;
         this.createdAt = LocalDateTime.now();
-    }
-
-    @PrePersist
-    public void prePersist() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-        }
-    }
-
-    public boolean isExpired() {
-        return expiresAt == null || LocalDateTime.now().isAfter(expiresAt);
-    }
-
-    public boolean matchesCode(String inputCode) {
-        return code != null && code.equals(inputCode);
+        this.expiresAt = expiresAt;
+        this.used = false;
     }
 
     public Long getId() {
@@ -69,31 +58,27 @@ public class EmailVerification {
         return purpose;
     }
 
-    public LocalDateTime getExpiresAt() {
-        return expiresAt;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public LocalDateTime getExpiresAt() {
+        return expiresAt;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public Boolean getUsed() {
+        return used;
     }
 
-    public void setPurpose(VerificationPurpose purpose) {
-        this.purpose = purpose;
+    public void setUsed(Boolean used) {
+        this.used = used;
     }
 
-    public void setExpiresAt(LocalDateTime expiresAt) {
-        this.expiresAt = expiresAt;
+    public boolean isExpired() {
+        return expiresAt.isBefore(LocalDateTime.now());
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public boolean matchesCode(String inputCode) {
+        return code != null && code.equals(inputCode);
     }
 }
