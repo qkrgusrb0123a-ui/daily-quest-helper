@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Properties;
@@ -90,7 +91,7 @@ public class EmailService {
         return mimeMessage;
     }
 
-    private Message createGmailMessage(MimeMessage mimeMessage) throws MessagingException, java.io.IOException {
+    private Message createGmailMessage(MimeMessage mimeMessage) throws MessagingException, IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         mimeMessage.writeTo(buffer);
 
