@@ -13,8 +13,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
+import java.util.Random;
 
 @Service
 public class AuthService {
@@ -23,19 +24,69 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final GameRepository gameRepository;
     private final QuestRepository questRepository;
+    private final EmailVerificationRepository emailVerificationRepository;
+    private final EmailService emailService;
 
     public AuthService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
                        GameRepository gameRepository,
-                       QuestRepository questRepository) {
+                       QuestRepository questRepository,
+                       EmailVerificationRepository emailVerificationRepository,
+                       EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.gameRepository = gameRepository;
         this.questRepository = questRepository;
+        this.emailVerificationRepository = emailVerificationRepository;
+        this.emailService = emailService;
+    }
+
+    public void sendRegisterVerificationCode(String email) {
+        String normalizedEmail = normalizeEmail(email);
+
+        if (normalizedEmail.isBlank()) {
+            throw new IllegalArgumentException("이메일을 입력해주세요.");
+        }
+
+        if (userRepository.existsByEmail(normalizedEmail)) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
+
+        createAndSendVerificationCode(normalizedEmail, VerificationPurpose.REGISTER);
+    }
+
+    public void sendFindUsernameVerificationCode(String email) {
+        String normalizedEmail = normalizeEmail(email);
+
+        if (normalizedEmail.isBlank()) {
+            throw new IllegalArgumentException("이메일을 입력해주세요.");
+        }
+
+        if (!userRepository.existsByEmail(normalizedEmail)) {
+            throw new IllegalArgumentException("사용자 계정이 없습니다.");
+        }
+
+        createAndSendVerificationCode(normalizedEmail, VerificationPurpose.FIND_USERNAME);
+    }
+
+    public void sendResetPasswordVerificationCode(String email) {
+        String normalizedEmail = normalizeEmail(email);
+
+        if (normalizedEmail.isBlank()) {
+            throw new IllegalArgumentException("이메일을 입력해주세요.");
+        }
+
+        if (!userRepository.existsByEmail(normalizedEmail)) {
+            throw new IllegalArgumentException("사용자 계정이 없습니다.");
+        }
+
+        createAndSendVerificationCode(normalizedEmail, VerificationPurpose.RESET_PASSWORD);
     }
 
     public void register(RegisterRequest request) {
         String username = request.getUsername() == null ? "" : request.getUsername().trim();
+        String email = normalizeEmail(request.getEmail());
+        String verificationCode = request.getVerificationCode() == null ? "" : request.getVerificationCode().trim();
         String password = request.getPassword() == null ? "" : request.getPassword();
         String confirmPassword = request.getConfirmPassword() == null ? "" : request.getConfirmPassword();
 
@@ -43,9 +94,23 @@ public class AuthService {
             throw new IllegalArgumentException("아이디를 입력해주세요.");
         }
 
+        if (email.isBlank()) {
+            throw new IllegalArgumentException("이메일을 입력해주세요.");
+        }
+
+        if (verificationCode.isBlank()) {
+            throw new IllegalArgumentException("이메일 인증코드를 입력해주세요.");
+        }
+
         if (userRepository.existsByUsername(username)) {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
         }
+
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
+
+        verifyCodeOrThrow(email, verificationCode, VerificationPurpose.REGISTER);
 
         if (!password.equals(confirmPassword)) {
             throw new IllegalArgumentException("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
@@ -55,15 +120,65 @@ public class AuthService {
 
         String encodedPassword = passwordEncoder.encode(password);
 
-        /*
-         이메일 기능 임시 비활성화
-         users.email 컬럼이 NOT NULL + UNIQUE 이므로
-         내부 저장용 임시 이메일 값을 자동 생성
-        */
-        String placeholderEmail = "disabled_" + UUID.randomUUID() + "@disabled.local";
-
-        User user = new User(username, placeholderEmail, encodedPassword, true);
+        User user = new User(username, email, encodedPassword, true);
         userRepository.save(user);
+
+        emailVerificationRepository.deleteByEmailAndPurpose(email, VerificationPurpose.REGISTER);
+    }
+
+    public String findUsernameByEmail(String email, String verificationCode) {
+        String normalizedEmail = normalizeEmail(email);
+        String normalizedCode = verificationCode == null ? "" : verificationCode.trim();
+
+        if (normalizedEmail.isBlank()) {
+            throw new IllegalArgumentException("이메일을 입력해주세요.");
+        }
+
+        if (normalizedCode.isBlank()) {
+            throw new IllegalArgumentException("이메일 인증코드를 입력해주세요.");
+        }
+
+        verifyCodeOrThrow(normalizedEmail, normalizedCode, VerificationPurpose.FIND_USERNAME);
+
+        User user = userRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 계정이 없습니다."));
+
+        emailVerificationRepository.deleteByEmailAndPurpose(normalizedEmail, VerificationPurpose.FIND_USERNAME);
+
+        return user.getUsername();
+    }
+
+    public void resetPasswordByEmail(String email, String verificationCode, String newPassword, String confirmPassword) {
+        String normalizedEmail = normalizeEmail(email);
+        String normalizedCode = verificationCode == null ? "" : verificationCode.trim();
+
+        if (normalizedEmail.isBlank()) {
+            throw new IllegalArgumentException("이메일을 입력해주세요.");
+        }
+
+        if (normalizedCode.isBlank()) {
+            throw new IllegalArgumentException("이메일 인증코드를 입력해주세요.");
+        }
+
+        if (newPassword == null || newPassword.isBlank() || confirmPassword == null || confirmPassword.isBlank()) {
+            throw new IllegalArgumentException("새 비밀번호와 비밀번호 확인을 입력해주세요.");
+        }
+
+        if (!newPassword.equals(confirmPassword)) {
+            throw new IllegalArgumentException("새 비밀번호가 일치하지 않습니다.");
+        }
+
+        verifyCodeOrThrow(normalizedEmail, normalizedCode, VerificationPurpose.RESET_PASSWORD);
+
+        validatePassword(newPassword);
+
+        User user = userRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 계정이 없습니다."));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        emailVerificationRepository.deleteByEmailAndPurpose(normalizedEmail, VerificationPurpose.RESET_PASSWORD);
     }
 
     public void login(LoginRequest request, HttpSession session) {
@@ -150,6 +265,46 @@ public class AuthService {
         }
 
         userRepository.delete(user);
+    }
+
+    private void createAndSendVerificationCode(String email, VerificationPurpose purpose) {
+        emailVerificationRepository.deleteByEmailAndPurpose(email, purpose);
+
+        String code = generateVerificationCode();
+
+        EmailVerification verification = new EmailVerification(
+                email,
+                code,
+                purpose,
+                LocalDateTime.now().plusMinutes(5)
+        );
+
+        emailVerificationRepository.save(verification);
+        emailService.sendVerificationCode(email, code, purpose);
+    }
+
+    private void verifyCodeOrThrow(String email, String inputCode, VerificationPurpose purpose) {
+        EmailVerification verification = emailVerificationRepository
+                .findTopByEmailAndPurposeOrderByCreatedAtDesc(email, purpose)
+                .orElseThrow(() -> new IllegalArgumentException("인증코드를 먼저 요청해주세요."));
+
+        if (verification.isExpired()) {
+            throw new IllegalArgumentException("인증코드가 만료되었습니다. 다시 요청해주세요.");
+        }
+
+        if (!verification.matchesCode(inputCode)) {
+            throw new IllegalArgumentException("인증코드가 올바르지 않습니다.");
+        }
+    }
+
+    private String generateVerificationCode() {
+        Random random = new Random();
+        int number = 100000 + random.nextInt(900000);
+        return String.valueOf(number);
+    }
+
+    private String normalizeEmail(String email) {
+        return email == null ? "" : email.trim().toLowerCase();
     }
 
     private void validatePassword(String password) {

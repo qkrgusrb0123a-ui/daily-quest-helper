@@ -22,29 +22,82 @@ public class AuthController {
         this.authService = authService;
     }
 
-    /*
-     이메일 기능 임시 비활성화
-     아래 API들은 주석 처리 대상이었음
-     - /send-register-code
-     - /send-find-username-code
-     - /send-reset-password-code
-     - /find-username
-     - /reset-password-by-email
-     - /email
-    */
+    @PostMapping("/send-register-code")
+    public ResponseEntity<?> sendRegisterCode(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        authService.sendRegisterVerificationCode(email);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "회원가입 인증코드를 전송했습니다."
+        ));
+    }
+
+    @PostMapping("/send-find-username-code")
+    public ResponseEntity<?> sendFindUsernameCode(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        authService.sendFindUsernameVerificationCode(email);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "아이디 찾기 인증코드를 전송했습니다."
+        ));
+    }
+
+    @PostMapping("/send-reset-password-code")
+    public ResponseEntity<?> sendResetPasswordCode(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        authService.sendResetPasswordVerificationCode(email);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "비밀번호 재설정 인증코드를 전송했습니다."
+        ));
+    }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         authService.register(request);
+
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "회원가입이 완료되었습니다."
         ));
     }
 
+    @PostMapping("/find-username")
+    public ResponseEntity<?> findUsername(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String verificationCode = request.get("verificationCode");
+
+        String username = authService.findUsernameByEmail(email, verificationCode);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "아이디 찾기에 성공했습니다.",
+                "username", username
+        ));
+    }
+
+    @PostMapping("/reset-password-by-email")
+    public ResponseEntity<?> resetPasswordByEmail(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String verificationCode = request.get("verificationCode");
+        String newPassword = request.get("newPassword");
+        String confirmPassword = request.get("confirmPassword");
+
+        authService.resetPasswordByEmail(email, verificationCode, newPassword, confirmPassword);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "비밀번호가 재설정되었습니다."
+        ));
+    }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request, HttpSession session) {
         authService.login(request, session);
+
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "로그인 성공",
@@ -55,6 +108,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpSession session) {
         authService.logout(session);
+
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "로그아웃 되었습니다."
@@ -70,6 +124,17 @@ public class AuthController {
                 "loggedIn", true,
                 "userId", user.getId(),
                 "username", user.getUsername()
+        ));
+    }
+
+    @GetMapping("/email")
+    public ResponseEntity<?> getMyEmail(HttpSession session) {
+        Long userId = getLoginUserId(session);
+        User user = authService.getUserById(userId);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "email", user.getEmail()
         ));
     }
 
