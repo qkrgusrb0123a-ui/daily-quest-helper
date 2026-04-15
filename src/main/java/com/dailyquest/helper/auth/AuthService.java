@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Random;
 
 @Service
+@Transactional
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -246,7 +247,6 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    @Transactional
     public void deleteAccount(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
