@@ -132,7 +132,8 @@
         }
 
         .toggle-btn,
-        .send-code-btn {
+        .send-code-btn,
+        .confirm-code-btn {
             white-space: nowrap;
             border: none;
             border-radius: 8px;
@@ -145,20 +146,43 @@
             min-width: 110px;
         }
 
-        .send-code-btn.sent {
+        .send-code-btn.sent,
+        .confirm-code-btn.verified {
             background: #3b73bd;
             color: white;
         }
 
-        .send-code-btn.loading {
+        .send-code-btn.loading,
+        .confirm-code-btn.loading {
             background: #94a9c6;
             color: white;
             cursor: not-allowed;
         }
 
-        .send-code-btn:disabled {
+        .send-code-btn:disabled,
+        .confirm-code-btn:disabled {
             cursor: not-allowed;
             opacity: 0.95;
+        }
+
+        .confirm-btn-row {
+            margin-top: 8px;
+        }
+
+        .confirm-code-btn {
+            width: 100%;
+        }
+
+        .verification-status {
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .verification-status.success {
+            color: #2e7d32;
         }
 
         .submit-btn {
@@ -177,7 +201,8 @@
         .submit-btn:hover,
         .tab-btn:hover,
         .toggle-btn:hover,
-        .send-code-btn:hover {
+        .send-code-btn:hover,
+        .confirm-code-btn:hover {
             filter: brightness(0.98);
         }
 
@@ -278,7 +303,8 @@
             }
 
             .toggle-btn,
-            .send-code-btn {
+            .send-code-btn,
+            .confirm-code-btn {
                 width: 100%;
             }
         }
@@ -316,6 +342,12 @@
                     <input type="text" id="verificationCode" placeholder="인증코드를 입력하세요">
                     <button type="button" id="sendCodeBtn" class="send-code-btn" onclick="sendVerificationCode()">인증코드 발송</button>
                 </div>
+
+                <div id="verifyCodeActionGroup" class="confirm-btn-row hidden">
+                    <button type="button" id="confirmCodeBtn" class="confirm-code-btn" onclick="confirmVerificationCode()">인증확인</button>
+                    <div id="verificationStatus" class="verification-status"></div>
+                </div>
+
                 <div class="field-hint">인증코드는 5분 동안 유효합니다.</div>
             </div>
 
@@ -366,6 +398,9 @@
 <script>
     const authApi = "/api/auth";
     let currentMode = "login";
+    let isVerificationChecked = false;
+    let verifiedEmail = "";
+    let verifiedCode = "";
 
     function setMode(mode) {
         currentMode = mode;
@@ -375,7 +410,6 @@
 
         const formTitle = document.getElementById("formTitle");
         const submitBtn = document.getElementById("submitBtn");
-        const message = document.getElementById("message");
         const loginSubLinks = document.getElementById("loginSubLinks");
 
         const usernameGroup = document.getElementById("usernameGroup");
@@ -386,6 +420,7 @@
         const passwordHint = document.getElementById("passwordHint");
         const ruleBox = document.getElementById("ruleBox");
         const guideText = document.getElementById("guideText");
+        const verifyCodeActionGroup = document.getElementById("verifyCodeActionGroup");
 
         loginTabBtn.classList.remove("active");
         registerTabBtn.classList.remove("active");
@@ -398,8 +433,10 @@
         passwordHint.classList.add("hidden");
         ruleBox.classList.add("hidden");
         loginSubLinks.classList.add("hidden");
+        verifyCodeActionGroup.classList.add("hidden");
 
         resetSendCodeButton();
+        resetVerificationConfirmState();
         clearFields();
         clearMessage();
 
@@ -425,6 +462,7 @@
             usernameGroup.classList.remove("hidden");
             emailGroup.classList.remove("hidden");
             verificationCodeGroup.classList.remove("hidden");
+            verifyCodeActionGroup.classList.remove("hidden");
             passwordGroup.classList.remove("hidden");
             confirmPasswordGroup.classList.remove("hidden");
             passwordHint.classList.remove("hidden");
@@ -433,7 +471,7 @@
             setSendCodeButtonLabelByMode();
 
             guideText.innerHTML =
-                "이메일 인증코드를 발송한 뒤 회원가입을 완료해주세요.<br>인증이 완료된 뒤 계정을 생성할 수 있습니다.";
+                "이메일 인증코드를 발송한 뒤 인증확인을 누르고 회원가입을 완료해주세요.<br>인증확인 후 계정을 생성할 수 있습니다.";
             return;
         }
 
@@ -549,15 +587,6 @@
     }
 
     function getSendCodeDefaultLabel() {
-        if (currentMode === "register") {
-            return "인증코드 발송";
-        }
-        if (currentMode === "findUsername") {
-            return "인증코드 발송";
-        }
-        if (currentMode === "resetPassword") {
-            return "인증코드 발송";
-        }
         return "인증코드 발송";
     }
 
@@ -575,6 +604,43 @@
         sendCodeBtn.classList.remove("loading", "sent");
     }
 
+    function resetVerificationConfirmState() {
+        isVerificationChecked = false;
+        verifiedEmail = "";
+        verifiedCode = "";
+
+        const confirmCodeBtn = document.getElementById("confirmCodeBtn");
+        const verificationStatus = document.getElementById("verificationStatus");
+
+        if (confirmCodeBtn) {
+            confirmCodeBtn.textContent = "인증확인";
+            confirmCodeBtn.disabled = false;
+            confirmCodeBtn.classList.remove("loading", "verified");
+        }
+
+        if (verificationStatus) {
+            verificationStatus.textContent = "";
+            verificationStatus.classList.remove("success");
+        }
+    }
+
+    function bindVerificationResetEvents() {
+        const emailInput = document.getElementById("email");
+        const verificationCodeInput = document.getElementById("verificationCode");
+
+        emailInput.addEventListener("input", () => {
+            if (currentMode === "register") {
+                resetVerificationConfirmState();
+            }
+        });
+
+        verificationCodeInput.addEventListener("input", () => {
+            if (currentMode === "register") {
+                resetVerificationConfirmState();
+            }
+        });
+    }
+
     async function sendVerificationCode() {
         const email = document.getElementById("email").value.trim();
         const message = document.getElementById("message");
@@ -590,6 +656,7 @@
 
         if (currentMode === "register") {
             endpoint = "/send-register-code";
+            resetVerificationConfirmState();
         } else if (currentMode === "findUsername") {
             endpoint = "/send-find-username-code";
         } else if (currentMode === "resetPassword") {
@@ -647,6 +714,62 @@
         }
     }
 
+    async function confirmVerificationCode() {
+        const email = document.getElementById("email").value.trim();
+        const verificationCode = document.getElementById("verificationCode").value.trim();
+        const message = document.getElementById("message");
+        const confirmCodeBtn = document.getElementById("confirmCodeBtn");
+        const verificationStatus = document.getElementById("verificationStatus");
+
+        if (currentMode !== "register") {
+            return;
+        }
+
+        if (!email) {
+            message.textContent = "이메일을 입력해주세요.";
+            message.classList.remove("success");
+            return;
+        }
+
+        if (!verificationCode) {
+            message.textContent = "인증코드를 입력해주세요.";
+            message.classList.remove("success");
+            return;
+        }
+
+        try {
+            confirmCodeBtn.disabled = true;
+            confirmCodeBtn.textContent = "확인 중...";
+            confirmCodeBtn.classList.add("loading");
+            confirmCodeBtn.classList.remove("verified");
+
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            isVerificationChecked = true;
+            verifiedEmail = email;
+            verifiedCode = verificationCode;
+
+            confirmCodeBtn.textContent = "인증확인 완료";
+            confirmCodeBtn.classList.remove("loading");
+            confirmCodeBtn.classList.add("verified");
+            confirmCodeBtn.disabled = false;
+
+            verificationStatus.textContent = "인증확인이 완료되었습니다. 이메일이나 인증코드를 수정하면 다시 확인해야 합니다.";
+            verificationStatus.classList.add("success");
+
+            message.textContent = "인증확인이 완료되었습니다.";
+            message.classList.add("success");
+        } catch (error) {
+            console.error("인증확인 처리 실패:", error);
+            message.textContent = "인증확인 처리 중 문제가 발생했습니다.";
+            message.classList.remove("success");
+
+            confirmCodeBtn.disabled = false;
+            confirmCodeBtn.textContent = "인증확인";
+            confirmCodeBtn.classList.remove("loading", "verified");
+        }
+    }
+
     async function submitAuth() {
         const username = document.getElementById("username").value.trim();
         const email = document.getElementById("email").value.trim();
@@ -695,6 +818,12 @@
         if (currentMode === "register") {
             if (!username || !email || !verificationCode || !password || !confirmPassword) {
                 message.textContent = "아이디, 이메일, 인증코드, 비밀번호를 모두 입력해주세요.";
+                message.classList.remove("success");
+                return;
+            }
+
+            if (!isVerificationChecked || verifiedEmail !== email || verifiedCode !== verificationCode) {
+                message.textContent = "회원가입 전에 인증확인 버튼을 눌러주세요.";
                 message.classList.remove("success");
                 return;
             }
@@ -764,7 +893,7 @@
                     return;
                 }
 
-                message.textContent = `아이디를 찾았습니다.\n${data.maskedUsername}`;
+                message.textContent = `아이디를 찾았습니다.\n${data.maskedUsername || data.username}`;
                 message.classList.add("success");
             } catch (error) {
                 console.error("아이디 찾기 실패:", error);
@@ -824,6 +953,7 @@
         window.location.href = "/index.html";
     }
 
+    bindVerificationResetEvents();
     setMode("login");
 </script>
 </body>
