@@ -743,7 +743,33 @@
             confirmCodeBtn.classList.add("loading");
             confirmCodeBtn.classList.remove("verified");
 
-            await new Promise(resolve => setTimeout(resolve, 300));
+            const response = await fetch(`${authApi}/confirm-register-code`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email,
+                    verificationCode
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                isVerificationChecked = false;
+                verifiedEmail = "";
+                verifiedCode = "";
+
+                verificationStatus.textContent = "";
+                verificationStatus.classList.remove("success");
+
+                message.textContent = data.message || "인증확인에 실패했습니다.";
+                message.classList.remove("success");
+
+                confirmCodeBtn.disabled = false;
+                confirmCodeBtn.textContent = "인증확인";
+                confirmCodeBtn.classList.remove("loading", "verified");
+                return;
+            }
 
             isVerificationChecked = true;
             verifiedEmail = email;
@@ -757,11 +783,19 @@
             verificationStatus.textContent = "인증확인이 완료되었습니다. 이메일이나 인증코드를 수정하면 다시 확인해야 합니다.";
             verificationStatus.classList.add("success");
 
-            message.textContent = "인증확인이 완료되었습니다.";
+            message.textContent = data.message || "인증확인이 완료되었습니다.";
             message.classList.add("success");
         } catch (error) {
             console.error("인증확인 처리 실패:", error);
-            message.textContent = "인증확인 처리 중 문제가 발생했습니다.";
+
+            isVerificationChecked = false;
+            verifiedEmail = "";
+            verifiedCode = "";
+
+            verificationStatus.textContent = "";
+            verificationStatus.classList.remove("success");
+
+            message.textContent = "서버 통신에 실패했습니다.";
             message.classList.remove("success");
 
             confirmCodeBtn.disabled = false;

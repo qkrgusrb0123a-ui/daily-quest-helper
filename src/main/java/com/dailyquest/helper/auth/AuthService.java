@@ -56,6 +56,32 @@ public class AuthService {
         createAndSendVerificationCode(normalizedEmail, VerificationPurpose.REGISTER);
     }
 
+    public void confirmRegisterVerificationCode(String email, String verificationCode) {
+        String normalizedEmail = normalizeEmail(email);
+        String normalizedCode = verificationCode == null ? "" : verificationCode.trim();
+
+        if (normalizedEmail.isBlank()) {
+            throw new IllegalArgumentException("이메일을 입력해주세요.");
+        }
+
+        if (normalizedCode.isBlank()) {
+            throw new IllegalArgumentException("이메일 인증코드를 입력해주세요.");
+        }
+
+        if (userRepository.existsByEmail(normalizedEmail)) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
+
+        EmailVerification verification = getValidVerificationOrThrow(
+                normalizedEmail,
+                normalizedCode,
+                VerificationPurpose.REGISTER
+        );
+
+        verification.setUsed(true);
+        emailVerificationRepository.save(verification);
+    }
+
     public void sendFindUsernameVerificationCode(String email) {
         String normalizedEmail = normalizeEmail(email);
 
@@ -111,7 +137,15 @@ public class AuthService {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
 
-        verifyCodeOrThrow(email, verificationCode, VerificationPurpose.REGISTER);
+        EmailVerification verification = getValidVerificationOrThrow(
+                email,
+                verificationCode,
+                VerificationPurpose.REGISTER
+        );
+
+        if (!Boolean.TRUE.equals(verification.getUsed())) {
+            throw new IllegalArgumentException("인증확인 버튼을 눌러 이메일 인증을 완료해주세요.");
+        }
 
         if (!password.equals(confirmPassword)) {
             throw new IllegalArgumentException("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
@@ -279,6 +313,7 @@ public class AuthService {
                 LocalDateTime.now().plusMinutes(5)
         );
 
+        verification.setUsed(false);
         emailVerificationRepository.save(verification);
 
         try {
@@ -290,6 +325,10 @@ public class AuthService {
     }
 
     private void verifyCodeOrThrow(String email, String inputCode, VerificationPurpose purpose) {
+        getValidVerificationOrThrow(email, inputCode, purpose);
+    }
+
+    private EmailVerification getValidVerificationOrThrow(String email, String inputCode, VerificationPurpose purpose) {
         EmailVerification verification = emailVerificationRepository
                 .findTopByEmailAndPurposeOrderByCreatedAtDesc(email, purpose)
                 .orElseThrow(() -> new IllegalArgumentException("인증코드를 먼저 요청해주세요."));
@@ -301,6 +340,8 @@ public class AuthService {
         if (!verification.matchesCode(inputCode)) {
             throw new IllegalArgumentException("인증코드가 올바르지 않습니다.");
         }
+
+        return verification;
     }
 
     private String generateVerificationCode() {

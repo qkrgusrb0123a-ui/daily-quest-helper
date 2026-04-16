@@ -33,6 +33,19 @@ public class AuthController {
         ));
     }
 
+    @PostMapping("/confirm-register-code")
+    public ResponseEntity<?> confirmRegisterCode(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String verificationCode = request.get("verificationCode");
+
+        authService.confirmRegisterVerificationCode(email, verificationCode);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "이메일 인증이 완료되었습니다."
+        ));
+    }
+
     @PostMapping("/send-find-username-code")
     public ResponseEntity<?> sendFindUsernameCode(@RequestBody Map<String, String> request) {
         String email = request.get("email");

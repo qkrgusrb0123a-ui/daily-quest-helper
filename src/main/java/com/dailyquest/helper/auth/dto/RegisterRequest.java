@@ -1,5 +1,6 @@
 package com.dailyquest.helper.auth.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -15,6 +16,7 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank(message = "이메일 인증코드를 입력해주세요.")
+    @JsonAlias("emailVerificationCode")
     private String verificationCode;
 
     @NotBlank(message = "비밀번호를 입력해주세요.")
