@@ -22,27 +22,36 @@
         }
 
         .header {
-            background: linear-gradient(to bottom, #3c66a6, #2d4f84);
-            color: white;
-            padding: 20px 30px;
-            font-size: 28px;
-            font-weight: bold;
-            position: relative;
-            text-align: center;
-        }
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 108px;
+        padding: 0 30px;
+        box-sizing: border-box;
+        background: linear-gradient(to bottom, #3c66a6, #2d4f84);
+        color: white;
+        font-size: 28px;
+        font-weight: bold;
+        text-align: center;
+    }
 
         .header-left-btn,
-        .header-right-btn {
-            position: absolute;
-            top: 16px;
-            background: #3b73bd;
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-            padding: 10px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-        }
+    .header-right-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        min-width: 98px;
+        height: 48px;
+        background: #3b73bd;
+        border: 1px solid rgba(255,255,255,0.2);
+        color: white;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        line-height: 1.2;
+    }
 
         .header-left-btn {
             left: 20px;

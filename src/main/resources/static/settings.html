@@ -22,28 +22,37 @@
         }
 
         .header {
-            background: linear-gradient(to bottom, #3c66a6, #2d4f84);
-            color: white;
-            padding: 20px 30px;
-            text-align: center;
-            position: relative;
-            font-size: 24px;
-            font-weight: bold;
-        }
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 108px;
+        padding: 0 30px;
+        box-sizing: border-box;
+        background: linear-gradient(to bottom, #3c66a6, #2d4f84);
+        color: white;
+        text-align: center;
+        font-size: 28px;
+        font-weight: bold;
+    }
 
         .back-btn,
-        .save-btn {
-            position: absolute;
-            top: 14px;
-            border: none;
-            cursor: pointer;
-            border-radius: 6px;
-            font-size: 16px;
-            padding: 10px 16px;
-            background: #3b73bd;
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
+    .save-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        min-width: 98px;
+        height: 48px;
+        border: none;
+        cursor: pointer;
+        border-radius: 8px;
+        font-size: 16px;
+        padding: 10px 16px;
+        background: #3b73bd;
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+        margin-top: 0;
+    }
 
         .back-btn {
             left: 20px;
@@ -427,13 +436,37 @@
 
         @media (max-width: 720px) {
             .header {
-                padding-top: 62px;
-            }
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 108px;
+        padding: 0 30px;
+        box-sizing: border-box;
+        background: linear-gradient(to bottom, #3c66a6, #2d4f84);
+        color: white;
+        text-align: center;
+        font-size: 28px;
+        font-weight: bold;
+    }
 
             .back-btn,
-            .save-btn {
-                top: 12px;
-            }
+    .save-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        min-width: 98px;
+        height: 48px;
+        border: none;
+        cursor: pointer;
+        border-radius: 8px;
+        font-size: 16px;
+        padding: 10px 16px;
+        background: #3b73bd;
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+        margin-top: 0;
+    }
 
             .top-row,
             .quest-add-row,
